@@ -27,41 +27,41 @@ to go
   tick
 end
 
+
+
 to move-randomly
-  ; Move the turtle randomly
+  ; Déplacer la tortue dans une direction aléatoire
 
-  ;;let current-color ; Get the color of the patch the turtle is currently on
-  ;;print (word "Turtle sees color: " current-color)
+  ; Récupérer la couleur du patch devant la tortue
+  let current-color [pcolor] of patch-ahead 1  ; Récupérer la couleur du patch devant
 
-  ; If the turtle hits a green wall, stop it
-  if [pcolor] of patch-ahead 1 = green [
-    stop
+  ; Afficher la couleur du patch (utile pour le débogage)
+  show (word "Patch color: " current-color)    ; Afficher la couleur du patch
+
+  ; Vérifier si la couleur du patch est dans l'intervalle du rouge (par exemple, entre 0 et 20)
+  if current-color >= 10 and current-color <= 30 [
+    ; Si la couleur est dans l'intervalle rouge, changer de direction
+    set heading random 360  ; Changer de direction
   ]
 
-  while [[pcolor] of patch-ahead 1 = red] [
-   set heading random 360  ; Change direction randomly
+  ; Vérifier si la couleur du patch est dans l'intervalle du vert (par exemple, entre 50 et 70)
+  if current-color >= 40 and current-color <= 70 [
+    ; Si la couleur est dans l'intervalle vert, arrêter la tortue
+    stop  ; Arrêter la tortue si elle touche du vert
   ]
 
-  while [[pcolor] of patch-at-heading-and-distance -30 1 = red] [
-   set heading random 360  ; Change direction randomly
-  ]
-
-  while [[pcolor] of patch-at-heading-and-distance 30 1 = red] [
-   set heading random 360  ; Change direction randomly
-  ]
-
-  ; Move the turtle forward
-  forward 1  ; Move randomly between 1 and 3 steps
+  ; Avancer la tortue d'un pas dans la direction actuelle
+  forward 1
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-435
-22
-1228
-692
+194
+18
+882
+592
 -1
 -1
-1.107203
+1.905
 1
 10
 1
@@ -71,10 +71,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--354
-354
--298
-298
+-178
+178
+-148
+148
 0
 0
 1
