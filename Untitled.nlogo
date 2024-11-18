@@ -10,7 +10,7 @@ to setup
   import-pcolors "background.png"
   set color-red [208 46 38]
   set color-green [26 128 65]
-   create-turtles 1 [
+   create-turtles 7 [
     set xcor -93   ; Set the x-coordinate to 5
     set ycor 100   ; Set the y-coordinate to 3
     set size 10
@@ -26,8 +26,6 @@ to go
   ]
   tick
 end
-
-
 
 to move-randomly
   ; Déplacer la tortue dans une direction aléatoire
@@ -259,6 +257,16 @@ Circle -7500403 true true 8 8 285
 Circle -16777216 true false 60 75 60
 Circle -16777216 true false 180 75 60
 Polygon -16777216 true false 150 168 90 184 62 210 47 232 67 244 90 220 109 205 150 198 192 205 210 220 227 242 251 229 236 206 212 183
+
+fire
+true
+0
+Rectangle -955883 true false 135 240 135 240
+Polygon -955883 true false 150 135 165 120
+Polygon -955883 true false 60 90 60 225
+Polygon -955883 true false 152 285 122 270 92 255 77 240 45 210 32 135 45 105 62 135 75 165 105 60 120 120 150 30 180 120 195 60 225 165 242 135 255 105 272 135 255 210 227 240 212 255 152 285 152 285 152 285
+Polygon -2674135 true false 105 90 120 165 150 75 180 165 195 90 225 180 255 135 240 210 195 240 150 270 105 240 60 210 45 135 75 180 105 90
+Polygon -1184463 true false 105 150 90 210 105 225 135 240 150 255 165 240 195 225 210 210 195 150 180 210 150 150 120 210 105 150
 
 fish
 false
