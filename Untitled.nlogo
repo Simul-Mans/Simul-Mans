@@ -7,17 +7,16 @@ globals [my-image
 to setup
   clear-all
   ; Import the image
-  import-pcolors "background.png"
+  import-pcolors "rdc.bmp"
   set color-red [208 46 38]
   set color-green [26 128 65]
    create-turtles 7 [
-    set xcor -93   ; Set the x-coordinate to 5
-    set ycor 100   ; Set the y-coordinate to 3
+    set xcor 50   ; Set the x-coordinate to 5
+    set ycor 50   ; Set the y-coordinate to 3
     set size 10
-    set shape "person"
+    ;set shape "person"
   ]
   reset-ticks
-  print(red)
 end
 
 to go
@@ -42,6 +41,14 @@ to move-randomly
     set heading random 360  ; Changer de direction
   ]
 
+  while [[pcolor] of patch-right-and-ahead 5 1 >= 10 and [pcolor] of patch-right-and-ahead 5 1 <= 30 ] [
+    set heading random 360  ; Change direction randomly
+  ]
+
+  while [[pcolor] of patch-left-and-ahead 5 1 >= 10 and [pcolor] of patch-left-and-ahead 5 1 <= 30 ] [
+   set heading random 360  ; Change direction randomly
+  ]
+
   ; Vérifier si la couleur du patch est dans l'intervalle du vert (par exemple, entre 50 et 70)
   if current-color >= 40 and current-color <= 70 [
     ; Si la couleur est dans l'intervalle vert, arrêter la tortue
@@ -53,13 +60,13 @@ to move-randomly
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-194
-18
-882
-592
+219
+10
+729
+521
 -1
 -1
-1.905
+2.0
 1
 10
 1
@@ -69,10 +76,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--178
-178
--148
-148
+-125
+125
+-125
+125
 0
 0
 1
