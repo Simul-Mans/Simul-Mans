@@ -1,30 +1,88 @@
-globals [my-image
-
+globals [
+  my-image
   color-red
   color-green
+  tick-counter ; Pour suivre les ticks pour la propagation de fumée
+]
+
+patches-own [
+  smoke-level ; Niveau de fumée sur chaque patch (0 = pas de fumée)
 ]
 
 to setup
   clear-all
   ; Import the image
-  import-pcolors "Background.bmp"
+  import-pcolors "rdc.bmp"
   set color-red [208 46 38]
   set color-green [26 128 65]
-   create-turtles 7 [
-    set xcor -93   ; Set the x-coordinate to 5
-    set ycor 100   ; Set the y-coordinate to 3
+
+  ; Initialiser les niveaux de fumée
+  ask patches [
+    if pcolor = white [  ; Assurez-vous que seuls les patches blancs peuvent contenir de la fumée
+      set smoke-level 0
+    ]
+  ]
+
+  ; Ajouter une source de fumée
+  ask patch 20 0 [  ; Exemple : source de fumée au centre
+    set smoke-level 1
+    set pcolor gray + 2  ; Premier niveau de fumée (gris clair)
+  ]
+
+  ; Créer des tortues
+  create-turtles 7 [
+    set xcor -93   ; Set the x-coordinate to -93
+    set ycor 100   ; Set the y-coordinate to 100
     set size 10
     set shape "person"
   ]
+
   reset-ticks
-  print(red)
 end
 
 to go
+  ; Diffusion de fumée
+  if ticks mod 30 = 0 [
+    diffuse-smoke
+  ]
+
+
+  ; Augmentation des niveaux de fumée tous les 10 ticks
+  if ticks mod 300 = 0 [
+    increase-smoke-level
+  ]
+
+  ; Mouvement des tortues
   ask turtles [
     move-randomly
   ]
+
   tick
+end
+
+to diffuse-smoke
+  ask patches with [smoke-level > 0 and not (pcolor >= 10 and pcolor <= 30)] [
+    ask neighbors with [smoke-level = 0 and not (pcolor >= 10 and pcolor <= 30)] [
+      ; Jet aléatoire entre 1 et 7
+      let diffusion-roll random 7 + 1
+      ; Vérifier si le jet est inférieur ou égal au smoke-level
+      if diffusion-roll <= [smoke-level] of myself [
+        set smoke-level 1
+        set pcolor gray + 2  ; Premier niveau de gris
+      ]
+    ]
+  ]
+end
+
+
+
+
+
+to increase-smoke-level
+  ask patches with [smoke-level > 0 and smoke-level < 7] [
+    set smoke-level smoke-level + 1
+    set pcolor gray + (smoke-level) ; Passer au niveau suivant
+  ]
 end
 
 to move-randomly
@@ -36,13 +94,13 @@ to move-randomly
   ; Afficher la couleur du patch (utile pour le débogage)
   show (word "Patch color: " current-color)    ; Afficher la couleur du patch
 
-  ; Vérifier si la couleur du patch est dans l'intervalle du rouge (par exemple, entre 0 et 20)
+  ; Vérifier si la couleur du patch est dans l'intervalle du rouge (mur)
   if current-color >= 10 and current-color <= 30 [
     ; Si la couleur est dans l'intervalle rouge, changer de direction
     set heading random 360  ; Changer de direction
   ]
 
-  ; Vérifier si la couleur du patch est dans l'intervalle du vert (par exemple, entre 50 et 70)
+  ; Vérifier si la couleur du patch est dans l'intervalle du vert (zone d'arrêt)
   if current-color >= 40 and current-color <= 70 [
     ; Si la couleur est dans l'intervalle vert, arrêter la tortue
     stop  ; Arrêter la tortue si elle touche du vert
@@ -55,8 +113,8 @@ end
 GRAPHICS-WINDOW
 194
 18
-882
-592
+584
+409
 -1
 -1
 1.905
@@ -69,10 +127,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--178
-178
--148
-148
+-100
+100
+-100
+100
 0
 0
 1

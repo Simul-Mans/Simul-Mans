@@ -10,7 +10,7 @@ to setup
   import-pcolors "rdc.bmp"
   set color-red [208 46 38]
   set color-green [26 128 65]
-   create-turtles 7 [
+   create-turtles Nb_Humain [
     set xcor 50   ; Set the x-coordinate to 5
     set ycor 50   ; Set the y-coordinate to 3
     set size 10
@@ -56,7 +56,7 @@ to move-randomly
   ]
 
   ; Avancer la tortue d'un pas dans la direction actuelle
-  forward 1
+  forward Vitesse_Humain
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -87,10 +87,10 @@ ticks
 30.0
 
 BUTTON
-94
-105
-160
-138
+25
+145
+91
+178
 NIL
 setup
 NIL
@@ -104,10 +104,10 @@ NIL
 1
 
 BUTTON
-84
-241
-147
-274
+125
+145
+188
+178
 NIL
 go
 T
@@ -119,6 +119,36 @@ NIL
 NIL
 NIL
 1
+
+SLIDER
+28
+30
+200
+63
+Nb_Humain
+Nb_Humain
+1
+200
+1.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+24
+82
+196
+115
+Vitesse_Humain
+Vitesse_Humain
+0
+2
+0.4
+0.2
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
