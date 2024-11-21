@@ -3,6 +3,7 @@ globals [
   color-red
   color-green
   tick-counter ; Pour suivre les ticks pour la propagation de fumée
+  movement-started
 ]
 
 patches-own [
@@ -15,7 +16,7 @@ to setup
   import-pcolors "rdc.bmp"
   set color-red [208 46 38]
   set color-green [26 128 65]
-
+  set movement-started 0
   ; Initialiser les niveaux de fumée
   ask patches [
     if pcolor = white [  ; Assurez-vous que seuls les patches blancs peuvent contenir de la fumée
@@ -40,6 +41,17 @@ to setup
   reset-ticks
 end
 
+to check-for-smoke
+  ; Vérifier les patches à 3 de distance autour de la tortue
+  let nearby-smoke patches in-radius 3 with [smoke-level >= 1]
+
+  ; Si un patch avec de la fumée est détecté, déclencher le mouvement
+  if any? nearby-smoke [
+    set movement-started 1
+  ]
+end
+
+
 to go
   ; Diffusion de fumée
   if ticks mod 30 = 0 [
@@ -53,8 +65,17 @@ to go
   ]
 
   ; Mouvement des tortues
-  ask turtles [
-    move-randomly
+  if movement-started = 0 [
+    ask turtles [
+      check-for-smoke
+    ]
+  ]
+
+  ; Si le mouvement est déclenché, les tortues bougent
+  if movement-started = 1 [
+    ask turtles [
+      move-randomly
+    ]
   ]
 
   tick
