@@ -31,8 +31,8 @@ to setup
 
   ; Créer des tortues
   create-turtles 7 [
-    set xcor -93   ; Set the x-coordinate to -93
-    set ycor 100   ; Set the y-coordinate to 100
+    set xcor 0  ; Set the x-coordinate to -93
+    set ycor 0   ; Set the y-coordinate to 100
     set size 10
     set shape "person"
   ]
@@ -86,24 +86,29 @@ to increase-smoke-level
 end
 
 to move-randomly
-  ; Déplacer la tortue dans une direction aléatoire
+  ; Récupérer la couleur du patch sous la tortue
+  let current-color [pcolor] of patch-here  ; Couleur du patch où se trouve la tortue
 
-  ; Récupérer la couleur du patch devant la tortue
-  let current-color [pcolor] of patch-ahead 1  ; Récupérer la couleur du patch devant
-
-  ; Afficher la couleur du patch (utile pour le débogage)
-  show (word "Patch color: " current-color)    ; Afficher la couleur du patch
-
-  ; Vérifier si la couleur du patch est dans l'intervalle du rouge (mur)
-  if current-color >= 10 and current-color <= 30 [
-    ; Si la couleur est dans l'intervalle rouge, changer de direction
-    set heading random 360  ; Changer de direction
+  ; Vérifier si le patch est de couleur `gray + 7`
+  if current-color = gray + 7 [
+    ; La tortue meurt si elle est sur une case de fumée très dense
+    die
+    stop
   ]
 
-  ; Vérifier si la couleur du patch est dans l'intervalle du vert (zone d'arrêt)
-  if current-color >= 40 and current-color <= 70 [
-    ; Si la couleur est dans l'intervalle vert, arrêter la tortue
-    stop  ; Arrêter la tortue si elle touche du vert
+  ; Déplacer la tortue dans une direction aléatoire
+  let patch-ahead-color [pcolor] of patch-ahead 1  ; Couleur du patch devant
+
+  ; Vérifier si le patch devant est un mur rouge
+  if patch-ahead-color >= 10 and patch-ahead-color <= 30 [
+    ; Si la couleur est rouge, changer de direction
+    set heading random 360
+  ]
+
+  ; Vérifier si le patch devant est une zone verte
+  if patch-ahead-color >= 40 and patch-ahead-color <= 70 [
+    ; Si la couleur est verte, arrêter la tortue
+    stop
   ]
 
   ; Avancer la tortue d'un pas dans la direction actuelle
