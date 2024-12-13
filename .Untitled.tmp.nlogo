@@ -237,13 +237,10 @@ Article scientifique sur la simulation de foule en lieu restreint et agents :
 https://hal.inrae.fr/hal-02940570/document
 
 
-Article sur la gestion des foules :
+Article sur la gestion des foules
 https://www.scienceinschool.org/fr/article/2012/crowding-fr/
 
-Chaîne youtube d'un chercheur dans les comportements de foules :
-https://www.youtube.com/@Fouloscopie
-
-
+Chaîne youtube d'un chercheur dans les phénomènes de foules 
 
 
 @#$#@#$#@
