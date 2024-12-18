@@ -2,12 +2,11 @@ extensions [time]
 
 
 globals [my-image
-
+  chrono-start   ;; L'heure de départ du chrono
+  chrono         ;; Le temps écoulé en secondes
   color-red
   color-green
 ]
-
-
 
 to setup
   clear-all
@@ -22,6 +21,7 @@ to setup
     set label "vivant"
     ;set shape "person"
   ]
+  set chrono 0  ;; Initialiser le chrono à 0
   reset-ticks
 end
 
@@ -29,6 +29,13 @@ to go
   ask turtles [
     move-randomly
   ]
+  if (chrono-start = 0) [  ;; Si le chrono n'a pas encore démarré
+    set chrono-start ticks  ;; Enregistrer le moment de départ (en ticks)
+  ]
+
+  set chrono (round ((ticks - chrono-start) / 10))  ;; Calculer le temps écoulé en secondes (ajusté pour être plus précis)
+
+
   tick
 end
 
@@ -135,7 +142,7 @@ Nb_Humain
 Nb_Humain
 1
 200
-1.0
+64.0
 1
 1
 NIL
@@ -179,16 +186,15 @@ PENS
 MONITOR
 759
 278
-865
+931
 323
-Durée simulation
-time
+Durée simulation (secondes)
+chrono
 17
 1
 11
 
 @#$#@#$#@
-
 ## WHAT IS IT?
 ON CHANGE EN FRANCAIS LE TITRE QUAND CEST FINI UNE PARTIE
 (à Valider)
@@ -278,7 +284,6 @@ https://www.scienceinschool.org/fr/article/2012/crowding-fr/
 
 Chaîne youtube d'un chercheur dans les comportements de foules :
 https://www.youtube.com/@Fouloscopie
-
 
 
 @#$#@#$#@
