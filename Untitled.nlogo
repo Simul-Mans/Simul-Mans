@@ -1,8 +1,13 @@
+extensions [time]
+
+
 globals [my-image
 
   color-red
   color-green
 ]
+
+
 
 to setup
   clear-all
@@ -14,6 +19,7 @@ to setup
     set xcor 50   ; Set the x-coordinate to 5
     set ycor 50   ; Set the y-coordinate to 3
     set size 10
+    set label "vivant"
     ;set shape "person"
   ]
   reset-ticks
@@ -150,8 +156,38 @@ Vitesse_Humain
 NIL
 HORIZONTAL
 
-@#$#@#$#@
+PLOT
+756
+15
+1328
+248
+Population
+Temps
+Personnes
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"Morts" 1.0 0 -2674135 true "" "plot count turtles with [ label =\"mort\" ]"
+"Vivants" 1.0 0 -1184463 true "" "plot count turtles with [ label =\"vivant\" ]"
+"Évacués" 1.0 0 -11085214 true "" "plot count turtles with [ label =\"évacués\" ]"
 
+MONITOR
+759
+278
+865
+323
+Durée simulation
+time
+17
+1
+11
+
+@#$#@#$#@
 
 ## WHAT IS IT?
 ON CHANGE EN FRANCAIS LE TITRE QUAND CEST FINI UNE PARTIE
@@ -242,7 +278,6 @@ https://www.scienceinschool.org/fr/article/2012/crowding-fr/
 
 Chaîne youtube d'un chercheur dans les comportements de foules :
 https://www.youtube.com/@Fouloscopie
-
 
 
 
