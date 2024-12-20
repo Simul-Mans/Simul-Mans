@@ -25,5 +25,7 @@ public class Entry extends DefaultClassManager {
     public void load(PrimitiveManager primManager) throws ExtensionException {
         primManager.addPrimitive("initializeGraph", new InitializeGraph());
         primManager.addPrimitive("getGraphNumberOfNodes", new GetGraphNumberOfNodes());
+        primManager.addPrimitive("getCoordsToAlarm", new CoordsToAlarm());
+        primManager.addPrimitive("getCoordsToExit", new CoordsToExit());
     }
 }

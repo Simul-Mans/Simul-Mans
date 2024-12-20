@@ -37,19 +37,19 @@ public class InitializeGraph implements org.nlogo.api.Reporter {
         return graph;
     }
 
-    public Graph<String, DefaultWeightedEdge> createGraph(BufferedImage image, int scaleFactor) {
+    public Graph<Coords, DefaultWeightedEdge> createGraph(BufferedImage image, int scaleFactor) {
         BufferedImage downscaledImage = downscaleImage(image, scaleFactor);
         int rows = downscaledImage.getHeight();
         int cols = downscaledImage.getWidth();
 
         // Create the graph
-        Graph<String, DefaultWeightedEdge> graph = new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
+        Graph<Coords, DefaultWeightedEdge> graph = new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 if (!isBlackOrGreen(downscaledImage, i, j)) continue;
 
-                String node = getNode(i, j);
+                Coords node = new Coords(i, j);
                 graph.addVertex(node);
 
                 for (int[] direction : directions) {
@@ -57,13 +57,10 @@ public class InitializeGraph implements org.nlogo.api.Reporter {
                     int newCol = j + direction[1];
 
                     if (isValidCell(newRow, newCol, rows, cols) && isBlackOrGreen(downscaledImage, newRow, newCol)) {
-                        String neighbor = getNode(newRow, newCol);
+                        Coords neighbor = new Coords(newRow, newCol);
                         graph.addVertex(neighbor);
-
-                        boolean neighborIsGreen = isGreenPixel(downscaledImage.getRGB(newRow, newCol));
-
-                        // Edge weight: High weight if the destination is green
-                        double weight = neighborIsGreen ? Double.MAX_VALUE : 1;
+                        
+                        double weight = 1;
 
                         DefaultWeightedEdge edge = graph.addEdge(node, neighbor);
 

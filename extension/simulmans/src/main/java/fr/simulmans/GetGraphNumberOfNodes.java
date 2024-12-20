@@ -18,7 +18,7 @@ public class GetGraphNumberOfNodes implements Reporter {
             throw new ExtensionException("Expected a Graph object as input.");
         }
 
-        Graph<String, DefaultWeightedEdge> graph = ((TurtleGraph) args[0].get()).getGraph();
+        Graph<Coords, DefaultWeightedEdge> graph = ((TurtleGraph) args[0].get()).getGraph();
         return String.valueOf(graph.vertexSet().size());
     }
 
