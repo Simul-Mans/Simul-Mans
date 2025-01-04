@@ -6,6 +6,11 @@ globals [my-image
   color-green
 ]
 
+
+breed [humans human]         ;; Pour les humains
+breed [exit-doors exit-door] ;; Pour les portes-sorties
+breed [buttons button]       ;; Pour les boutons
+
 to setup
   clear-all
   ; Import the image
@@ -14,19 +19,69 @@ to setup
   set color-green [26 128 65]
   set graph simulmans:initializeGraph 5
   show simulmans:getGraphNumberOfNodes graph
-   create-turtles 10 [
-    set xcor 10   ; Set the x-coordinate to 5
-    set ycor -30   ; Set the y-coordinate to 3
-    set size 5
-    ;set shape "person"
+  ;; Créer les humains
+  create-humans 10 [
+    set xcor random-xcor
+    set ycor random-ycor
+    set size 8
+    set color blue
+    set shape "person"
+    set label "" ;; Cache le label
+  ]
+
+  ;; Liste des coordonnées pour les portes-sorties et les boutons
+  let portes-coords [[-85 55] [55 -23]]  ;; Exemple de coordonnées fixes
+  let boutons-coords [[-10 -10] [-20 -20] [-30 -30] [-40 -40]]
+
+  ;; Créer les portes-sorties
+  let porte-compteur 0
+  create-exit-doors length portes-coords [
+    if porte-compteur < length portes-coords [
+      let coord item porte-compteur portes-coords
+      setxy first coord last coord
+      set size 10
+      set color green
+      set shape "square"
+      set label "" ;; Cache le label
+      set porte-compteur (porte-compteur + 1)
+    ]
+  ]
+
+  ;; Créer les boutons
+  let bouton-compteur 0
+  create-buttons length boutons-coords [
+    if bouton-compteur < length boutons-coords [
+      let coord item bouton-compteur boutons-coords
+      setxy first coord last coord
+      set size 5
+      set color red
+      set shape "circle"
+      set label "" ;; Cache le label
+      set bouton-compteur (bouton-compteur + 1)
+    ]
   ]
   reset-ticks
 end
 
 to go
-  ask turtles [
+  ;; Déplacement des humains
+  ask humans [
     move-randomly
   ]
+
+  ;; Gérer les interactions
+  ask humans [
+    ;; Vérifier si un humain est dans la zone de contact d'une porte-sortie
+    if any? exit-doors in-radius 7 [ ;; Rayon d'interaction augmenté
+      die ;; L'humain est "sauvé" et disparaît
+    ]
+
+    ;; Vérifier si un humain est dans la zone de contact d'un bouton
+    if any? buttons in-radius 7 [ ;; Rayon d'interaction augmenté
+      set label "ALERTE !" ;; Déclencher une alarme
+    ]
+  ]
+
   tick
 end
 
