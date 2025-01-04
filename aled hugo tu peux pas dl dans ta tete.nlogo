@@ -20,7 +20,7 @@ to setup
   set color-red [208 46 38]
   set color-green [26 128 65]
   ;; Créer les humains
-  create-humans 1 [
+  create-humans 15 [
     set xcor -28
     set ycor 51
     set size 1
@@ -31,7 +31,7 @@ to setup
     print simulmans:getGraph
   ]
 
-  create-humans 1 [
+  create-humans 15 [
     set xcor 46
     set ycor -61
     set size 1
