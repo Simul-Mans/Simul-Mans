@@ -3,18 +3,14 @@ package fr.simulmans;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
-import org.nlogo.api.Argument;
-import org.nlogo.api.Context;
-import org.nlogo.api.ExtensionException;
+import org.nlogo.api.*;
 import org.nlogo.core.Syntax;
-import org.apache.commons.lang3.ArrayUtils;
 import org.nlogo.core.SyntaxJ;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.Objects;
 
-public class InitializeGraph implements org.nlogo.api.Reporter {
+public class InitializeGraph implements org.nlogo.api.Command {
 
     private final int[][] directions = {
             {-1, 0}, // Up
@@ -24,17 +20,24 @@ public class InitializeGraph implements org.nlogo.api.Reporter {
     };
 
     @Override
-    public Object report(Argument[] args, Context context) throws ExtensionException {
-        int turtleSize = Objects.requireNonNull(ArrayUtils.get(args, 0), "Argument requis [1] : taille des personnes").getIntValue();
+    public void perform(Argument[] args, Context context) throws ExtensionException {
         BufferedImage playfield = context.getDrawing();
+
+        if(!(context.getAgent() instanceof Turtle turtle)){
+            throw new ExtensionException("Not a Turtle");
+        }
 
         TurtleGraph graph = new TurtleGraph();
 
-        graph.setTurtleSize(turtleSize);
+        graph.setTurtleSize(turtle.size());
 
-        graph.setGraph(createGraph(playfield, turtleSize));
+        graph.setGraph(createGraph(playfield, (int) turtle.size()));
 
-        return graph;
+        try {
+            turtle.setVariable(0, graph);
+        } catch (AgentException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public Graph<Coords, DefaultWeightedEdge> createGraph(BufferedImage image, int scaleFactor) {
@@ -75,10 +78,6 @@ public class InitializeGraph implements org.nlogo.api.Reporter {
         }
 
         return graph;
-    }
-
-    private String getNode(int row, int col) {
-        return row + "," + col;
     }
 
     private boolean isBlackOrGreen(BufferedImage image, int row, int col) {

@@ -27,7 +27,7 @@ public class CoordsToAlarm implements Reporter {
 
         AStarShortestPath<Coords, DefaultWeightedEdge> aStarAlgorithm = new AStarShortestPath<>(graph.getGraph(), (v1, v2) -> 0);
 
-        Coords turtleCoords = new Coords(((int) turtle.xcor()) / graph.getTurtleSize(), ((int) turtle.ycor()) / graph.getTurtleSize());
+        Coords turtleCoords = new Coords((int) (turtle.xcor() / graph.getTurtleSize()), (int) ( turtle.ycor() / graph.getTurtleSize()));
 
         // On calcule le plus court chemin pour chaque alarme
         GraphPath<Coords, DefaultWeightedEdge> path = Streams.of(alarms.agents())
@@ -36,7 +36,7 @@ public class CoordsToAlarm implements Reporter {
                     // On calcule le plus court chemin pour chaque alarme
                     Turtle alarm = (Turtle) agent;
 
-                    Coords alarmCoords = new Coords(((int) alarm.xcor()) / graph.getTurtleSize(), ((int) alarm.ycor()) / graph.getTurtleSize());
+                    Coords alarmCoords = new Coords((int)( alarm.xcor() / graph.getTurtleSize()), (int)( alarm.ycor() / graph.getTurtleSize()));
                     return aStarAlgorithm.getPath(turtleCoords, alarmCoords);
                 })
                 .min(Comparator.comparingInt(GraphPath::getLength))
@@ -44,7 +44,7 @@ public class CoordsToAlarm implements Reporter {
 
 
         Coords startVertex = path.getStartVertex();
-        Coords nextPathCoordinates = new Coords(startVertex.x() * graph.getTurtleSize(), startVertex.y() * graph.getTurtleSize());
+        Coords nextPathCoordinates = new Coords(startVertex.x() * graph.getTurtleSize().intValue(), startVertex.y() * graph.getTurtleSize().intValue());
 
         return LogoList.fromJava(List.of(nextPathCoordinates.x(), nextPathCoordinates.y()));
     }

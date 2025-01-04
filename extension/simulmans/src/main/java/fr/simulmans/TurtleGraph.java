@@ -9,7 +9,7 @@ public class TurtleGraph {
     public Graph<Coords, DefaultWeightedEdge> getGraph() { return graph; }
     public void setGraph(Graph<Coords, DefaultWeightedEdge> graph) { this.graph = graph; }
 
-    private Integer turtleSize;
-    public Integer getTurtleSize() { return turtleSize; }
-    public void setTurtleSize(Integer turtleSize) { this.turtleSize = turtleSize; }
+    private Double turtleSize;
+    public Double getTurtleSize() { return turtleSize; }
+    public void setTurtleSize(Double turtleSize) { this.turtleSize = turtleSize; }
 }
