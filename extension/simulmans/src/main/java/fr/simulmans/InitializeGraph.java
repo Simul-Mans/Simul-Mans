@@ -1,14 +1,17 @@
 package fr.simulmans;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.nlogo.api.*;
 import org.nlogo.core.Syntax;
 import org.nlogo.core.SyntaxJ;
+import org.nlogo.core.WorldDimensions;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 public class InitializeGraph implements org.nlogo.api.Command {
 
@@ -19,11 +22,20 @@ public class InitializeGraph implements org.nlogo.api.Command {
             {0, 1}   // Right
     };
 
+    public void print(String input, Context context) {
+        new Thread(() -> context.workspace().command("""
+                print "%s"
+                """.formatted(input)))
+                .start();
+    }
+
     @Override
     public void perform(Argument[] args, Context context) throws ExtensionException {
         BufferedImage playfield = context.getDrawing();
 
-        if(!(context.getAgent() instanceof Turtle turtle)){
+
+
+        if (!(context.getAgent() instanceof Turtle turtle)) {
             throw new ExtensionException("Not a Turtle");
         }
 
@@ -31,26 +43,33 @@ public class InitializeGraph implements org.nlogo.api.Command {
 
         graph.setTurtleSize(turtle.size());
 
-        graph.setGraph(createGraph(playfield, (int) turtle.size()));
+        try {
+            graph.setGraph(createGraph(context, turtle.size()));
+        } catch (AgentException e) {
+            throw new ExtensionException(e);
+        }
+
+        int rows = playfield.getHeight();
+        int cols = playfield.getWidth();
+
+        print(String.valueOf(playfield.getRGB(-13 + (cols / 2), 27 + (rows / 2))), context);
 
         try {
-            turtle.setVariable(0, graph);
+            turtle.setVariable(13, graph);
         } catch (AgentException e) {
-            throw new RuntimeException(e);
+            throw new ExtensionException(e);
         }
     }
 
-    public Graph<Coords, DefaultWeightedEdge> createGraph(BufferedImage image, int scaleFactor) {
-        BufferedImage downscaledImage = downscaleImage(image, scaleFactor);
-        int rows = downscaledImage.getHeight();
-        int cols = downscaledImage.getWidth();
+    public Graph<Coords, DefaultWeightedEdge> createGraph(Context context, double scaleFactor) throws AgentException {
+        WorldDimensions dimensions = context.world().getDimensions();
 
         // Create the graph
         Graph<Coords, DefaultWeightedEdge> graph = new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                if (!isBlackOrGreen(downscaledImage, i, j)) continue;
+        for (int i = dimensions.minPycor(); i < dimensions.maxPycor() / 2; i++) {
+            for (int j = dimensions.minPxcor(); j < dimensions.maxPxcor() / 2; j++) {
+                if (!isBlackOrGreen(context, scaleFactor, i, j)) continue;
 
                 Coords node = new Coords(i, j);
                 graph.addVertex(node);
@@ -59,16 +78,16 @@ public class InitializeGraph implements org.nlogo.api.Command {
                     int newRow = i + direction[0];
                     int newCol = j + direction[1];
 
-                    if (isValidCell(newRow, newCol, rows, cols) && isBlackOrGreen(downscaledImage, newRow, newCol)) {
+                    if (isValidCell(newRow, newCol, dimensions) && isBlackOrGreen(context, scaleFactor, newRow, newCol)) {
                         Coords neighbor = new Coords(newRow, newCol);
                         graph.addVertex(neighbor);
-                        
+
                         double weight = 1;
 
                         DefaultWeightedEdge edge = graph.addEdge(node, neighbor);
 
                         // Null = les voisins n'existent pas
-                        if(edge != null) {
+                        if (edge != null) {
                             // Add edge with weight
                             graph.setEdgeWeight(edge, weight);
                         }
@@ -80,35 +99,33 @@ public class InitializeGraph implements org.nlogo.api.Command {
         return graph;
     }
 
-    private boolean isBlackOrGreen(BufferedImage image, int row, int col) {
-        int rgb = image.getRGB(col, row);
-        return isBlackPixel(rgb) || isGreenPixel(rgb);
+    private boolean isBlackOrGreen(Context context, double scaleFactor, int row, int col) throws AgentException {
+
+        Patch p = context.world().getPatchAt( row / scaleFactor,  col / scaleFactor);
+
+        return isBlackPixel(p) || isGreenPixel(p);
     }
 
 
     @Override
     public Syntax getSyntax() {
-        return SyntaxJ.reporterSyntax(
-                new int[]{Syntax.NumberType()},
-                Syntax.WildcardType());
+        return SyntaxJ.commandSyntax();
     }
 
-    private boolean isBlackPixel(int rgb) {
-        int red = (rgb >> 16) & 0xFF;
-        int green = (rgb >> 8) & 0xFF;
-        int blue = rgb & 0xFF;
-        return red == 0 && green == 0 && blue == 0; // Black pixel
+    private boolean isBlackPixel(Patch p) {
+        Double color = (Double) p.pcolor();
+
+        return color % 10 == 0 ; // Black pixel
     }
 
-    private boolean isGreenPixel(int rgb) {
-        int red = (rgb >> 16) & 0xFF;
-        int green = (rgb >> 8) & 0xFF;
-        int blue = rgb & 0xFF;
-        return red == 35 && green == 171 && blue == 47; // Green pixel
+    private boolean isGreenPixel(Patch p) {
+        Double color = (Double) p.pcolor();
+
+        return (color >= 51 && color <= 59) || (color >= 61 && color <= 69) ; // Black pixel
     }
 
-    private boolean isValidCell(int row, int col, int rows, int cols) {
-        return row >= 0 && col >= 0 && row < rows && col < cols;
+    private boolean isValidCell(int row, int col, WorldDimensions dimensions) {
+        return row >= dimensions.minPycor() && col >= dimensions.minPxcor() && row <= dimensions.maxPycor() && col <= dimensions.maxPxcor();
     }
 
     private BufferedImage downscaleImage(BufferedImage image, int scaleFactor) {

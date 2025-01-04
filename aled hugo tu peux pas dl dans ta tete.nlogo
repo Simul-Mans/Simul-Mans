@@ -1,11 +1,13 @@
 extensions [ simulmans ]
 
 globals [my-image
-  graph
   color-red
   color-green
 ]
 
+turtles-own [
+  graph
+]
 
 breed [humans human]         ;; Pour les humains
 breed [exit-doors exit-door] ;; Pour les portes-sorties
@@ -17,20 +19,31 @@ to setup
   import-pcolors "rdc.bmp"
   set color-red [208 46 38]
   set color-green [26 128 65]
-  set graph simulmans:initializeGraph 5
-  show simulmans:getGraphNumberOfNodes graph
   ;; Créer les humains
-  create-humans 10 [
-    set xcor random-xcor
-    set ycor random-ycor
-    set size 8
+  create-humans 1 [
+    set xcor -28
+    set ycor 51
+    set size 1
     set color blue
     set shape "person"
     set label "" ;; Cache le label
+    simulmans:initializeGraph
+    print simulmans:getGraph
+  ]
+
+  create-humans 1 [
+    set xcor 46
+    set ycor -61
+    set size 1
+    set color blue
+    set shape "person"
+    set label "" ;; Cache le label
+    simulmans:initializeGraph
+    print simulmans:getGraph
   ]
 
   ;; Liste des coordonnées pour les portes-sorties et les boutons
-  let portes-coords [[-85 55] [55 -23]]  ;; Exemple de coordonnées fixes
+  let portes-coords [[-39 -4] [-13 -111]]  ;; Exemple de coordonnées fixes
   let boutons-coords [[-10 -10] [-20 -20] [-30 -30] [-40 -40]]
 
   ;; Créer les portes-sorties
@@ -39,7 +52,7 @@ to setup
     if porte-compteur < length portes-coords [
       let coord item porte-compteur portes-coords
       setxy first coord last coord
-      set size 10
+      set size 5
       set color green
       set shape "square"
       set label "" ;; Cache le label
@@ -66,7 +79,15 @@ end
 to go
   ;; Déplacement des humains
   ask humans [
-    move-randomly
+   ;; move-randomly
+      let coords simulmans:getCoordsToExit
+
+  let x item 0 coords
+  let y item 1 coords
+
+  face patch x y
+    forward 1
+    show (word "x : " x "y : " y)
   ]
 
   ;; Gérer les interactions
@@ -87,6 +108,14 @@ end
 
 to move-randomly
   ; Déplacer la tortue dans une direction aléatoire
+  let coords simulmans:getCoordsToExit
+
+  let x item 0 coords
+  let y item 1 coords
+
+  face patch x y
+
+  show (word "x : " x "y : " y)
 
   ; Récupérer la couleur du patch devant la tortue
   let current-color [pcolor] of patch-ahead 3  ; Récupérer la couleur du patch devant
@@ -115,7 +144,7 @@ to move-randomly
   ]
 
   ; Avancer la tortue d'un pas dans la direction actuelle
-  forward 3
+  forward 1
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
