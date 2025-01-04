@@ -8,11 +8,9 @@ import org.nlogo.api.*;
 import org.nlogo.core.LogoList;
 import org.nlogo.core.Syntax;
 import org.nlogo.core.SyntaxJ;
-import scala.math.ScalaNumber;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 public class CoordsToExit implements Reporter {
     @Override

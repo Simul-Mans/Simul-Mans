@@ -23,7 +23,7 @@ public class CoordsToAlarm implements Reporter {
         TurtleGraph graph = (TurtleGraph) turtle.getVariable(0);
 
         // On récupère les alarmes incendies et leurs coordonnées
-        AgentSet alarms = context.world().getBreed("buttons");
+        AgentSet alarms = context.world().getBreed("BUTTONS");
 
         AStarShortestPath<Coords, DefaultWeightedEdge> aStarAlgorithm = new AStarShortestPath<>(graph.getGraph(), (v1, v2) -> 0);
 
