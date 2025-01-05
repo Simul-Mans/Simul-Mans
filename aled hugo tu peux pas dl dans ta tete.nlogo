@@ -227,6 +227,10 @@ to go
     ]
   ]
 
+  if not any? humans [
+    stop ; Arrêter la simulation si toutes les tortues sont mortes
+  ]
+
   tick
 end
 
@@ -463,7 +467,7 @@ nombre-portes
 nombre-portes
 0
 4
-2.0
+4.0
 1
 1
 NIL
