@@ -3,6 +3,7 @@ extensions [ simulmans ]
 globals [my-image
   color-red
   color-green
+  movement-started
 ]
 
 humans-own [
@@ -16,6 +17,12 @@ breed [humans human]         ;; Pour les humains
 breed [exit-doors exit-door] ;; Pour les portes-sorties
 breed [buttons button]       ;; Pour les boutons
 
+patches-own [
+  smoke-level ; Niveau de fumée sur chaque patch (0 = pas de fumée)
+]
+
+
+
 to setup
   clear-all
   ; Import the image
@@ -26,6 +33,7 @@ to setup
   ;; Calcul des coordonnées d'apparition
 
   let spawnable-coords simulmans:getSpawnableCoords
+  set movement-started 0
 
   ;; Créer les humains
   create-humans 10 [
@@ -47,8 +55,8 @@ to setup
 
 
   ;; Liste des coordonnées pour les portes-sorties et les boutons
-  let portes-coords [[-39 -4] [-13 -111]]  ;; Exemple de coordonnées fixes
-  let boutons-coords [[-10 -10] [-20 -20] [-30 -30] [-40 -40]]
+  let portes-coords [[-86 53] [55 -22]]  ;; Exemple de coordonnées fixes
+  let boutons-coords [[-71 48] [-20 48] [-49 8] [-25 -21] [-15 -86] [9 7] [53 -11] [65 48]]
 
   ;; Créer les portes-sorties
   let porte-compteur 0
@@ -56,7 +64,7 @@ to setup
     if porte-compteur < length portes-coords [
       let coord item porte-compteur portes-coords
       setxy first coord last coord
-      set size 5
+      set size 12
       set color green
       set shape "square"
       set label "" ;; Cache le label
@@ -71,28 +79,102 @@ to setup
       let coord item bouton-compteur boutons-coords
       setxy first coord last coord
       set size 5
-      set color red
+      set color orange
       set shape "circle"
       set label "" ;; Cache le label
       set bouton-compteur (bouton-compteur + 1)
     ]
   ]
+
+  ;; Partie Fumée !!!!
+
+  ask patches [
+    if pcolor = white [  ; Assurez-vous que seuls les patches blancs peuvent contenir de la fumée
+      set smoke-level 0
+    ]
+  ]
+
+  ; Ajouter une source de fumée
+  ask patch 20 0 [  ; Exemple : source de fumée au centre
+    set smoke-level 1
+    set pcolor gray + 2  ; Premier niveau de fumée (gris clair)
+  ]
+
+
   reset-ticks
 end
 
+
+;; Fonction pour la fumée c'est le check actuel des turtles
+to check-for-smoke
+  ; Vérifier les patches à 3 de distance autour de la tortue
+  let nearby-smoke patches in-radius 3 with [smoke-level >= 1]
+
+  ; Si un patch avec de la fumée est détecté, déclencher le mouvement
+  if any? nearby-smoke [
+    set movement-started 1
+  ]
+end
+
+;; Diffusion de la fumée ( à refaire )
+to diffuse-smoke
+  ask patches with [smoke-level > 0 and not (pcolor >= 10 and pcolor <= 30)] [
+    ask neighbors with [smoke-level = 0 and not (pcolor >= 10 and pcolor <= 30)] [
+      ; Jet aléatoire entre 1 et 7
+      let diffusion-roll random 7 + 1
+      ; Vérifier si le jet est inférieur ou égal au smoke-level
+      if diffusion-roll <= [smoke-level] of myself [
+        set smoke-level 1
+        set pcolor gray + 2  ; Premier niveau de gris
+      ]
+    ]
+  ]
+end
+
+;; Condition d'augmentation du niveau de fumée (faut changer pour que ça soit quand on a pas eu à ce tick de nouveau patch qui est devenu gris
+to increase-smoke-level
+  ask patches with [smoke-level > 0 and smoke-level < 7] [
+    set smoke-level smoke-level + 1
+    set pcolor gray + (smoke-level) ; Passer au niveau suivant
+  ]
+end
+
 to go
-  ;; Déplacement des humains
-  ask humans [
-   ;; move-randomly
-      let coords simulmans:getCoordsToExit
 
-  let x item 0 coords
-  let y item 1 coords
-
-  face patch x y
-    forward speed
+  ; Diffusion de fumée
+  if ticks mod 30 = 0 [
+    diffuse-smoke
   ]
 
+
+  ; Augmentation des niveaux de fumée tous les 10 ticks
+  if ticks mod 300 = 0 [
+    increase-smoke-level
+  ]
+
+  ; Mouvement des tortues
+  if movement-started = 0 [
+    ask humans [
+      check-for-smoke
+    ]
+  ]
+
+
+  ;; Déplacement des humains
+  if movement-started = 1 [
+
+    ask humans [
+      ;; move-randomly
+      let coords simulmans:getCoordsToExit
+
+      let x item 0 coords
+      let y item 1 coords
+
+      face patch x y
+      forward speed
+    ]
+
+  ]
   ;; Gérer les interactions
   ask humans [
     ;; Vérifier si un humain est dans la zone de contact d'une porte-sortie
