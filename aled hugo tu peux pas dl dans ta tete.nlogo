@@ -225,6 +225,10 @@ to go
       set movement-started 1
       set label "ALERTE !" ;; Déclencher une alarme
     ]
+
+    if all? neighbors [smoke-level > 3 or (pcolor >= 10 and pcolor <= 30)] [
+      die ;; On tue l'humain si la fumée est trop dense
+    ]
   ]
 
   if not any? humans [
