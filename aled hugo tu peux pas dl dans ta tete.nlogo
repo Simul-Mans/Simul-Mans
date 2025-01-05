@@ -47,7 +47,7 @@ to setup
     set speed human-speed
     set ticks-since-last-pathfinding 5
     set size 5
-    set color blue
+    set color yellow
     set shape "person"
     set label "" ;; Cache le label
     set smoke-detected false
@@ -56,15 +56,16 @@ to setup
 
 
   ;; Liste des coordonnées pour les portes-sorties et les boutons
+  setup-exit-doors
 
   let boutons-coords [[-71 51] [-20 48] [-50 5] [-25 -21] [-14 -86] [9.0 4.0] [53 -11] [65 48]]
+  set boutons-coords shuffle boutons-coords
 
-  setup-exit-doors
 
   ;; Créer les boutons
   let bouton-compteur 0
-  create-buttons length boutons-coords [
-    if bouton-compteur < length boutons-coords [
+  create-buttons nombre-boutons [
+    if bouton-compteur < nombre-boutons [
       let coord item bouton-compteur boutons-coords
       setxy first coord last coord
       set size 5
@@ -74,6 +75,10 @@ to setup
       set bouton-compteur (bouton-compteur + 1)
     ]
   ]
+
+
+
+
 
   ;; Partie Fumée !!!!
 
@@ -155,7 +160,7 @@ end
 to go
 
   ; Diffusion de fumée
-  if ticks mod 30 = 0 [
+  if ticks mod 5 = 0 [
     diffuse-smoke
   ]
 
@@ -282,11 +287,11 @@ to fill-doors [coords]
 end
 
 to setup-exit-doors
-  let portes-coords [[-86 53] [55 -22] [-39 -121]]  ;; Exemple de coordonnées fixes
-
+  let portes-coords [[-86 53] [55 -22] [-39 -121] [5 -101]]  ;; Exemple de coordonnées fixes
+  set portes-coords shuffle portes-coords
   ;; Créer les portes-sorties
   let porte-compteur 0
-  create-exit-doors length portes-coords [
+  create-exit-doors nombre-portes [
     if porte-compteur < length portes-coords [
       let coord item porte-compteur portes-coords
       setxy first coord last coord
@@ -296,16 +301,6 @@ to setup-exit-doors
       set label "" ;; Cache le label
       set porte-compteur (porte-compteur + 1)
     ]
-  ]
-
-  create-exit-doors 1 [
-      let coord [5 -101]
-      setxy first coord last coord
-      set size 14
-      set color green
-      set shape "square"
-      set label "" ;; Cache le label
-    set porte-compteur (porte-compteur + 1)
   ]
 end
 @#$#@#$#@
@@ -425,6 +420,36 @@ human-speed
 1
 1
 patch / tick
+HORIZONTAL
+
+SLIDER
+913
+333
+1085
+366
+nombre-boutons
+nombre-boutons
+1
+7
+3.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+909
+374
+1081
+407
+nombre-portes
+nombre-portes
+0
+4
+2.0
+1
+1
+NIL
 HORIZONTAL
 
 @#$#@#$#@
