@@ -23,6 +23,9 @@ humans-own [
 breed [humans human]         ;; Pour les humains
 breed [exit-doors exit-door] ;; Pour les portes-sorties
 breed [buttons button]       ;; Pour les boutons
+breed [signals signal]       ;; Pour les boutons
+
+
 
 to setup
   clear-all
@@ -76,8 +79,22 @@ to setup
     ]
   ]
 
-
-
+  let signalisation-coords [[-59 54 270] [4 53 270] [57 52 270] [44 -2 180] [-59 2 0] [-29 -28 90] [14 0 160] ]
+  set signalisation-coords shuffle signalisation-coords
+  ;; Créer les signalisation
+  let signal-compteur 0
+  create-signals nombre-signals[
+    if signal-compteur < nombre-signals [
+      let coord item signal-compteur signalisation-coords
+      setxy item 0 coord item 1 coord
+      set size 6
+      set color green
+      set shape "arrow"
+      set heading item 2 coord
+      set label "" ;; Cache le label
+      set signal-compteur (signal-compteur + 1)
+    ]
+  ]
 
 
   ;; Partie Fumée !!!!
@@ -447,6 +464,21 @@ nombre-portes
 0
 4
 2.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+910
+421
+1082
+454
+nombre-signals
+nombre-signals
+0
+7
+7.0
 1
 1
 NIL
