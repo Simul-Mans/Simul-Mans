@@ -1,6 +1,7 @@
 package fr.simulmans;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
@@ -8,6 +9,7 @@ import org.nlogo.api.*;
 import org.nlogo.core.Syntax;
 import org.nlogo.core.SyntaxJ;
 import org.nlogo.core.WorldDimensions;
+import org.nlogo.nvm.ExtensionContext;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -41,18 +43,16 @@ public class InitializeGraph implements org.nlogo.api.Command {
 
         TurtleGraph graph = new TurtleGraph();
 
-        graph.setTurtleSize(turtle.size());
+        graph.setTurtleSize(1D);
 
         try {
-            graph.setGraph(createGraph(context, turtle.size()));
+            graph.setGraph(createGraph(context, 1));
         } catch (AgentException e) {
             throw new ExtensionException(e);
         }
 
         int rows = playfield.getHeight();
         int cols = playfield.getWidth();
-
-        print(String.valueOf(playfield.getRGB(-13 + (cols / 2), 27 + (rows / 2))), context);
 
         try {
             turtle.setVariable(13, graph);
@@ -67,12 +67,20 @@ public class InitializeGraph implements org.nlogo.api.Command {
         // Create the graph
         Graph<Coords, DefaultWeightedEdge> graph = new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
 
-        for (int i = dimensions.minPycor(); i < dimensions.maxPycor() / 2; i++) {
-            for (int j = dimensions.minPxcor(); j < dimensions.maxPxcor() / 2; j++) {
+        boolean debug = (boolean) context.world().observer().getVariable(context.world().observerOwnsIndexOf("DEBUG-GRAPH"));
+
+        for (int i = dimensions.minPycor(); i < dimensions.maxPycor(); i++) {
+            for (int j = dimensions.minPxcor(); j < dimensions.maxPxcor(); j++) {
                 if (!isBlackOrGreen(context, scaleFactor, i, j)) continue;
 
                 Coords node = new Coords(i, j);
                 graph.addVertex(node);
+
+                if(debug){
+                    Patch p = context.world().fastGetPatchAt(i, j);
+
+                    p.setVariable(org.nlogo.agent.Patch.VAR_PCOLOR, 138D);
+                }
 
                 for (int[] direction : directions) {
                     int newRow = i + direction[0];

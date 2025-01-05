@@ -33,6 +33,8 @@ public class Entry extends DefaultClassManager {
         primManager.addPrimitive("getCoordsToExit", new CoordsToExit());
         primManager.addPrimitive("breeds", new Breeds());
         primManager.addPrimitive("getGraph", new DisplayGraph());
+        primManager.addPrimitive("getSpawnableCoords", new SpawnableAreaCoords());
+        primManager.addPrimitive("getRandomSpawnableCoords", new SpawnableCoords());
     }
 
     public static class Breeds implements Reporter {

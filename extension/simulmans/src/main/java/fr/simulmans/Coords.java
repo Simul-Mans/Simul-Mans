@@ -1,4 +1,4 @@
 package fr.simulmans;
 
-public record Coords(int x, int y){
+public record Coords(double x, double y){
 }

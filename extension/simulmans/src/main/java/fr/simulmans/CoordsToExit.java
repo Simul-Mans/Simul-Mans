@@ -8,9 +8,11 @@ import org.nlogo.api.*;
 import org.nlogo.core.LogoList;
 import org.nlogo.core.Syntax;
 import org.nlogo.core.SyntaxJ;
+import scala.Int;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 public class CoordsToExit implements Reporter {
     @Override
@@ -18,6 +20,27 @@ public class CoordsToExit implements Reporter {
 
         if(!(context.getAgent() instanceof Turtle turtle)){
             throw new ExtensionException("Not a Turtle");
+        }
+
+        Integer ticksSinceLastPathfinding = ((Double) turtle.getVariable(14)).intValue();
+
+        if(ticksSinceLastPathfinding % 5 != 0){
+            GraphPath<Coords, DefaultWeightedEdge> path = (GraphPath<Coords, DefaultWeightedEdge>) turtle.getVariable(15);
+
+            Integer speed = ((Double) turtle.getVariable(16)).intValue();
+
+            Coords startVertex = path.getVertexList().get(speed * (5 - (ticksSinceLastPathfinding % 5)));
+
+            LogoListBuilder builder = new LogoListBuilder();
+
+            try {
+                turtle.setVariable(14, (double) (ticksSinceLastPathfinding + 1));
+            } catch (AgentException e) {
+                throw new ExtensionException(e);
+            }
+
+            builder.add(startVertex.x());
+            builder.add(startVertex.y());
         }
 
         TurtleGraph graph = (TurtleGraph) turtle.getVariable(13);
@@ -41,11 +64,28 @@ public class CoordsToExit implements Reporter {
                     Turtle exit = (Turtle) agent;
 
                     Coords exitCoords = new Coords((int)(exit.xcor() / graph.getTurtleSize()), (int)( exit.ycor() / graph.getTurtleSize()));
-                    return aStarAlgorithm.getPath(turtleCoords, exitCoords);
-                })
-                .min(Comparator.comparingInt(GraphPath::getLength))
-                .orElseThrow();
 
+                    try {
+                        return aStarAlgorithm.getPath(turtleCoords, exitCoords);
+                    }
+                    catch (Exception e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .min(Comparator.comparingInt(GraphPath::getLength))
+                .orElse(null);
+
+        if(path == null){
+            return LogoList.fromJava(List.of(turtle.xcor(), turtle.ycor()));
+        }
+
+        try {
+            turtle.setVariable(15, path);
+            turtle.setVariable(14, 1D);
+        } catch (AgentException e) {
+            throw new ExtensionException(e);
+        }
 
         Coords startVertex = path.getVertexList().get(1);
         Coords nextPathCoordinates = new Coords(startVertex.x() * graph.getTurtleSize().intValue(), startVertex.y() * graph.getTurtleSize().intValue());

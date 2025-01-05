@@ -5,8 +5,11 @@ globals [my-image
   color-green
 ]
 
-turtles-own [
+humans-own [
   graph
+  ticks-since-last-pathfinding
+  current-path
+  speed
 ]
 
 breed [humans human]         ;; Pour les humains
@@ -19,11 +22,22 @@ to setup
   import-pcolors "rdc.bmp"
   set color-red [208 46 38]
   set color-green [26 128 65]
+
+  ;; Calcul des coordonnées d'apparition
+
+  let spawnable-coords simulmans:getSpawnableCoords
+
   ;; Créer les humains
-  create-humans 15 [
-    set xcor -28
-    set ycor 51
-    set size 1
+  create-humans 10 [
+    let coords simulmans:getRandomSpawnableCoords spawnable-coords
+
+    set xcor item 0 coords
+    set ycor item 1 coords
+    ;;set xcor -20
+   ;; set ycor 70
+    set speed 2
+    set ticks-since-last-pathfinding 5
+    set size 5
     set color blue
     set shape "person"
     set label "" ;; Cache le label
@@ -31,16 +45,6 @@ to setup
     print simulmans:getGraph
   ]
 
-  create-humans 15 [
-    set xcor 46
-    set ycor -61
-    set size 1
-    set color blue
-    set shape "person"
-    set label "" ;; Cache le label
-    simulmans:initializeGraph
-    print simulmans:getGraph
-  ]
 
   ;; Liste des coordonnées pour les portes-sorties et les boutons
   let portes-coords [[-39 -4] [-13 -111]]  ;; Exemple de coordonnées fixes
@@ -86,8 +90,7 @@ to go
   let y item 1 coords
 
   face patch x y
-    forward 1
-    show (word "x : " x "y : " y)
+    forward speed
   ]
 
   ;; Gérer les interactions
@@ -207,6 +210,17 @@ NIL
 NIL
 NIL
 1
+
+SWITCH
+53
+41
+193
+74
+debug-graph
+debug-graph
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
