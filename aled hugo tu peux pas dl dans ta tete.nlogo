@@ -11,6 +11,7 @@ humans-own [
   ticks-since-last-pathfinding
   current-path
   speed
+  smoke-detected
 ]
 
 breed [humans human]         ;; Pour les humains
@@ -43,20 +44,20 @@ to setup
     set ycor item 1 coords
     ;;set xcor -20
    ;; set ycor 70
-    set speed 2
+    set speed human-speed
     set ticks-since-last-pathfinding 5
     set size 5
     set color blue
     set shape "person"
     set label "" ;; Cache le label
+    set smoke-detected false
     simulmans:initializeGraph
-    print simulmans:getGraph
   ]
 
 
   ;; Liste des coordonnées pour les portes-sorties et les boutons
   let portes-coords [[-86 53] [55 -22]]  ;; Exemple de coordonnées fixes
-  let boutons-coords [[-71 48] [-20 48] [-49 8] [-25 -21] [-15 -86] [9 7] [53 -11] [65 48]]
+  let boutons-coords [[-71 51] [-20 48] [-49 8] [-25 -21] [-15 -86] [9 7] [53 -11] [65 48]]
 
   ;; Créer les portes-sorties
   let porte-compteur 0
@@ -94,12 +95,19 @@ to setup
     ]
   ]
 
+  let fire-coords simulmans:getRandomSpawnableCoords spawnable-coords
+  let x item 0 fire-coords
+  let y item 1 fire-coords
+
   ; Ajouter une source de fumée
-  ask patch 20 0 [  ; Exemple : source de fumée au centre
+  ask patch x y [  ; Exemple : source de fumée au centre
     set smoke-level 1
     set pcolor gray + 2  ; Premier niveau de fumée (gris clair)
   ]
 
+  if debug-graph [
+   simulmans:debugGraph
+  ]
 
   reset-ticks
 end
@@ -112,7 +120,7 @@ to check-for-smoke
 
   ; Si un patch avec de la fumée est détecté, déclencher le mouvement
   if any? nearby-smoke [
-    set movement-started 1
+    set smoke-detected true
   ]
 end
 
@@ -153,12 +161,15 @@ to go
   ]
 
   ; Mouvement des tortues
-  if movement-started = 0 [
+  if movement-started = 0[
     ask humans [
-      check-for-smoke
+      ifelse smoke-detected [
+        go-to-button
+      ] [
+        check-for-smoke
+      ]
     ]
   ]
-
 
   ;; Déplacement des humains
   if movement-started = 1 [
@@ -183,12 +194,23 @@ to go
     ]
 
     ;; Vérifier si un humain est dans la zone de contact d'un bouton
-    if any? buttons in-radius 7 [ ;; Rayon d'interaction augmenté
+    if any? buttons in-radius 7  and smoke-detected and movement-started = 0[ ;; Rayon d'interaction augmenté
+      set movement-started 1
       set label "ALERTE !" ;; Déclencher une alarme
     ]
   ]
 
   tick
+end
+
+to go-to-button
+  let coords simulmans:getCoordsToAlarm
+
+  let x item 0 coords
+  let y item 1 coords
+
+  face patch x y
+  forward speed
 end
 
 to move-randomly
@@ -300,28 +322,110 @@ SWITCH
 74
 debug-graph
 debug-graph
-1
+0
 1
 -1000
 
+PLOT
+916
+36
+1488
+269
+Population
+Temps
+Personnes
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"Morts" 1.0 0 -2674135 true "" "plot count turtles with [ label =\"mort\" ]"
+"Vivants" 1.0 0 -1184463 true "" "plot count turtles with [ label =\"vivant\" ]"
+"Évacués" 1.0 0 -11085214 true "" "plot count turtles with [ label =\"évacués\" ]"
+
+MONITOR
+915
+268
+1087
+313
+Durée simulation (secondes)
+chrono
+17
+1
+11
+
+SLIDER
+1087
+268
+1487
+301
+human-speed
+human-speed
+0
+10
+2.0
+1
+1
+patch / tick
+HORIZONTAL
+
 @#$#@#$#@
 ## WHAT IS IT?
+ON CHANGE EN FRANCAIS LE TITRE QUAND CEST FINI UNE PARTIE
+(à Valider)
 
-(a general understanding of what the model is trying to show or explain)
+Simul'Mans est un projet Netlogo qui est une simulation multi-agents d'une évacuation du bâtiment IC2. Notre mission principale sera de faire une simulation d'évacuation d'un incendie dans le bâtiment.
+
+
+Pour la simulation, les humains (agent personne) sont représentés par des petits bonhommes de toutes les couleurs. Les foyers de flammes en orange (partant du principe qu'en intérieur la propagation du feu n'est pas (mot pour rapide mais plus scientifique). De la fumée de plus en plus sombre symbole de sa densité se dégage des flammes et se propage dans le bâtiment.
+L'enceinte du bâtiment est délimité distinctement avec les murs et portes le composant. 
+
 
 ## HOW IT WORKS
 
-(what rules the agents use to create the overall behavior of the model)
+Pour initialiser la simulation on charge un fichier contenant l'enceinte du bâtiment que nous avons modéliser à partir des plans du bâtiment. On se sert de (Façon de charger la map au final).
+
+Comportements : 
+
+Agent personne : 
+Une personne est un agent qui se déplace dans un environnement restreint. Son but est d’atteindre une sortie en restant en vie. Une personne peut être plus ou moins paniquée ce qui va influencer sur la rationalité de ses décisions. 
+
+Agent personne responsable : (on voit si on le fait)
+Une personne responsable est semblable à une personne à l’exception qu’elle quittera le bâtiment seulement lorsque tous les individus dont elle est responsable auront évacués les lieux. Cette personne est aussi chargée de l’utilisation des extincteurs.
+
+Agent FuméeSansFeu :
+La fumée est un agent qui se propage progressivement avec différents état de "toxicité de l'air ambiant" il détruit un agent personne au simple contact si la toxicité est trop grande. (à voir pour la visibilité) 
+
 
 ## HOW TO USE IT
 
-(how to use the model, including a description of each of the items in the Interface tab)
+(Protocole des trucs à cliquer pour savoir comment ça marche)
+
+#1 : Appuyer sur le bouton "Setup" pour charger la carte 
+
+#2 : Choisir à l'aide des sliders les paramètres souhaités pour la simulation
+
+(séparer en étapes toutes les variables que la personne peut modifier)
+
+#3
+
+
+#? Appuyer sur le bouton "Go" pour lancer la simulation
+
+
 
 ## THINGS TO NOTICE
 
-(suggested things for the user to notice while running the model)
+Pendant le déroulé de la simulation un suivi est possible sur les indicateurs à côté de la simulation pour consulté le nombre de personne restantes (mortes, vivantes et évacuées).
+
+(à voir pour afficher d'autre choses) 
 
 ## THINGS TO TRY
+
+(Les choses qu'on peut faire varier dans la simulation)
 
 (suggested things for the user to try to do (move sliders, switches, etc.) with the model)
 
@@ -329,17 +433,35 @@ debug-graph
 
 (suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
 
+On peut imaginer traiter d’autres types d’alertes (attaque terroriste, présence de gaz, inondation, écroulement, etc).
+Une vue en 3D serait aussi préférable pour observer les différents étages.
+
+(on mettra ce qu'on a pas fait)
+
 ## NETLOGO FEATURES
 
 (interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
 
-## RELATED MODELS
+Lors de la conception de la simulation nous avons mis en place l'emploi de :
 
-(models in the NetLogo Models Library and elsewhere which are of related interest)
+- blabla
+- blabla
+- blabla
+
 
 ## CREDITS AND REFERENCES
 
 (a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
+
+Article scientifique sur la simulation de foule en lieu restreint et agents :
+https://hal.inrae.fr/hal-02940570/document
+
+
+Article sur la gestion des foules :
+https://www.scienceinschool.org/fr/article/2012/crowding-fr/
+
+Chaîne youtube d'un chercheur dans les comportements de foules :
+https://www.youtube.com/@Fouloscopie
 @#$#@#$#@
 default
 true

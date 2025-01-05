@@ -67,10 +67,10 @@ public class InitializeGraph implements org.nlogo.api.Command {
         // Create the graph
         Graph<Coords, DefaultWeightedEdge> graph = new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
 
-        boolean debug = (boolean) context.world().observer().getVariable(context.world().observerOwnsIndexOf("DEBUG-GRAPH"));
+        boolean debug = (boolean) context.world().observer().getVariable(context.world().observerOwnsIndexOf("DEBUG-GRAPH")) &&         !(context.getAgent() instanceof Turtle);
 
-        for (int i = dimensions.minPycor(); i < dimensions.maxPycor(); i++) {
-            for (int j = dimensions.minPxcor(); j < dimensions.maxPxcor(); j++) {
+        for (int i = dimensions.minPxcor(); i < dimensions.maxPxcor(); i++) {
+            for (int j = dimensions.minPycor(); j < dimensions.maxPycor(); j++) {
                 if (!isBlackOrGreen(context, scaleFactor, i, j)) continue;
 
                 Coords node = new Coords(i, j);

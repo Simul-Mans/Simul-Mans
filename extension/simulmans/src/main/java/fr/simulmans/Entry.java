@@ -35,6 +35,7 @@ public class Entry extends DefaultClassManager {
         primManager.addPrimitive("getGraph", new DisplayGraph());
         primManager.addPrimitive("getSpawnableCoords", new SpawnableAreaCoords());
         primManager.addPrimitive("getRandomSpawnableCoords", new SpawnableCoords());
+        primManager.addPrimitive("debugGraph", new DebugAgents());
     }
 
     public static class Breeds implements Reporter {
@@ -85,6 +86,39 @@ public class Entry extends DefaultClassManager {
             }
 
             return llb.toLogoList();
+
+        }
+    }
+
+    public static class DebugAgents implements Command {
+        public Syntax getSyntax() {
+            return SyntaxJ.commandSyntax();
+        }
+
+        public void perform(Argument args[], Context context)
+                throws ExtensionException, org.nlogo.api.LogoException {
+
+            InitializeGraph init = new InitializeGraph();
+
+            org.jgrapht.Graph<Coords, org.jgrapht.graph.DefaultWeightedEdge> graph;
+
+            try {
+                graph = init.createGraph(context, 1);
+            } catch (AgentException e) {
+                throw new ExtensionException(e);
+            }
+
+            for(Agent a : context.world().turtles().agents()){
+                Turtle turtle = (Turtle) a;
+
+                if(graph.containsVertex(new Coords(turtle.xcor(), turtle.ycor()))){
+                    try {
+                        turtle.setVariable(org.nlogo.agent.Turtle.VAR_COLOR, 97D);
+                    } catch (AgentException e) {
+                        throw new ExtensionException(e);
+                    }
+                }
+            }
 
         }
     }

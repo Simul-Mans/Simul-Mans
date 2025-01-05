@@ -24,12 +24,12 @@ public class CoordsToExit implements Reporter {
 
         Integer ticksSinceLastPathfinding = ((Double) turtle.getVariable(14)).intValue();
 
+        Integer speed = ((Double) turtle.getVariable(16)).intValue();
+
         if(ticksSinceLastPathfinding % 5 != 0){
             GraphPath<Coords, DefaultWeightedEdge> path = (GraphPath<Coords, DefaultWeightedEdge>) turtle.getVariable(15);
 
-            Integer speed = ((Double) turtle.getVariable(16)).intValue();
-
-            Coords startVertex = path.getVertexList().get(speed * (5 - (ticksSinceLastPathfinding % 5)));
+            Coords startVertex = path.getVertexList().get(speed * ((ticksSinceLastPathfinding % 5)));
 
             LogoListBuilder builder = new LogoListBuilder();
 
@@ -41,6 +41,8 @@ public class CoordsToExit implements Reporter {
 
             builder.add(startVertex.x());
             builder.add(startVertex.y());
+
+            return builder.toLogoList();
         }
 
         TurtleGraph graph = (TurtleGraph) turtle.getVariable(13);
@@ -87,7 +89,7 @@ public class CoordsToExit implements Reporter {
             throw new ExtensionException(e);
         }
 
-        Coords startVertex = path.getVertexList().get(1);
+        Coords startVertex = path.getVertexList().get(speed);
         Coords nextPathCoordinates = new Coords(startVertex.x() * graph.getTurtleSize().intValue(), startVertex.y() * graph.getTurtleSize().intValue());
 
         return LogoList.fromJava(List.of((double) nextPathCoordinates.x(), (double) nextPathCoordinates.y()));
