@@ -22,8 +22,8 @@ public class SpawnableCoords implements Reporter {
 
         LogoListBuilder builder = new LogoListBuilder();
 
-        builder.add(randomValue.x());
-        builder.add(randomValue.y());
+        builder.add((double) randomValue.x());
+        builder.add((double) randomValue.y());
 
         return builder.toLogoList();
     }

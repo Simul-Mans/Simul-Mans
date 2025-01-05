@@ -69,7 +69,7 @@ public class Entry extends DefaultClassManager {
                     Syntax.ListType());
         }
 
-        public Object report(Argument args[], Context context)
+        public LogoList report(Argument args[], Context context)
                 throws ExtensionException, org.nlogo.api.LogoException {
             LogoListBuilder llb = new LogoListBuilder();
 
@@ -90,12 +90,12 @@ public class Entry extends DefaultClassManager {
         }
     }
 
-    public static class DebugAgents implements Command {
+    public static class DebugAgents implements Reporter {
         public Syntax getSyntax() {
-            return SyntaxJ.commandSyntax();
+            return SyntaxJ.reporterSyntax(Syntax.ListType());
         }
 
-        public void perform(Argument args[], Context context)
+        public LogoList report(Argument args[], Context context)
                 throws ExtensionException, org.nlogo.api.LogoException {
 
             InitializeGraph init = new InitializeGraph();
@@ -103,7 +103,7 @@ public class Entry extends DefaultClassManager {
             org.jgrapht.Graph<Coords, org.jgrapht.graph.DefaultWeightedEdge> graph;
 
             try {
-                graph = init.createGraph(context, 1);
+                graph = init.createGraph(context);
             } catch (AgentException e) {
                 throw new ExtensionException(e);
             }
@@ -111,7 +111,7 @@ public class Entry extends DefaultClassManager {
             for(Agent a : context.world().turtles().agents()){
                 Turtle turtle = (Turtle) a;
 
-                if(graph.containsVertex(new Coords(turtle.xcor(), turtle.ycor()))){
+                if(graph.containsVertex(new Coords((int) turtle.xcor(), (int) turtle.ycor()))){
                     try {
                         turtle.setVariable(org.nlogo.agent.Turtle.VAR_COLOR, 97D);
                     } catch (AgentException e) {
@@ -120,6 +120,13 @@ public class Entry extends DefaultClassManager {
                 }
             }
 
+            LogoListBuilder llb = new LogoListBuilder();
+
+            for(Coords coords : graph.vertexSet()) {
+                llb.add("\n%s %s".formatted(coords.x(), coords.y()));
+            }
+
+            return llb.toLogoList();
         }
     }
 

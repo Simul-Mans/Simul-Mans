@@ -4,6 +4,12 @@ globals [my-image
   color-red
   color-green
   movement-started
+  smoke-updated
+]
+
+patches-own [
+  patch-type
+  smoke-level ; Niveau de fumée sur chaque patch (0 = pas de fumée)
 ]
 
 humans-own [
@@ -18,12 +24,6 @@ breed [humans human]         ;; Pour les humains
 breed [exit-doors exit-door] ;; Pour les portes-sorties
 breed [buttons button]       ;; Pour les boutons
 
-patches-own [
-  smoke-level ; Niveau de fumée sur chaque patch (0 = pas de fumée)
-]
-
-
-
 to setup
   clear-all
   ; Import the image
@@ -37,7 +37,7 @@ to setup
   set movement-started 0
 
   ;; Créer les humains
-  create-humans 10 [
+  create-humans 5 [
     let coords simulmans:getRandomSpawnableCoords spawnable-coords
 
     set xcor item 0 coords
@@ -56,22 +56,10 @@ to setup
 
 
   ;; Liste des coordonnées pour les portes-sorties et les boutons
-  let portes-coords [[-86 53] [55 -22]]  ;; Exemple de coordonnées fixes
-  let boutons-coords [[-71 51] [-20 48] [-49 8] [-25 -21] [-15 -86] [9 7] [53 -11] [65 48]]
 
-  ;; Créer les portes-sorties
-  let porte-compteur 0
-  create-exit-doors length portes-coords [
-    if porte-compteur < length portes-coords [
-      let coord item porte-compteur portes-coords
-      setxy first coord last coord
-      set size 12
-      set color green
-      set shape "square"
-      set label "" ;; Cache le label
-      set porte-compteur (porte-compteur + 1)
-    ]
-  ]
+  let boutons-coords [[-71 51] [-20 48] [-50 5] [-25 -21] [-14 -86] [9.0 4.0] [53 -11] [65 48]]
+
+  setup-exit-doors
 
   ;; Créer les boutons
   let bouton-compteur 0
@@ -106,8 +94,10 @@ to setup
   ]
 
   if debug-graph [
-   simulmans:debugGraph
+   print simulmans:debugGraph
   ]
+
+  setup-doors
 
   reset-ticks
 end
@@ -126,12 +116,27 @@ end
 
 ;; Diffusion de la fumée ( à refaire )
 to diffuse-smoke
-  ask patches with [smoke-level > 0 and not (pcolor >= 10 and pcolor <= 30)] [
-    ask neighbors with [smoke-level = 0 and not (pcolor >= 10 and pcolor <= 30)] [
+  set smoke-updated false
+
+  ask patches with [smoke-level > 3 and not (pcolor >= 10 and pcolor <= 30)] [
+    ask neighbors with [smoke-level = 0 and not (pcolor >= 10 and pcolor <= 30) and not any? exit-doors in-radius 7 ] [
       ; Jet aléatoire entre 1 et 7
       let diffusion-roll random 7 + 1
       ; Vérifier si le jet est inférieur ou égal au smoke-level
       if diffusion-roll <= [smoke-level] of myself [
+        set smoke-updated true
+        set smoke-level 1
+        set pcolor gray + 2  ; Premier niveau de gris
+      ]
+    ]
+  ]
+  ask patches with [smoke-level > 0 and smoke-level < 4 and not (pcolor >= 10 and pcolor <= 30)] [
+    ask neighbors with [smoke-level = 0 and not (pcolor >= 10 and pcolor <= 30) and not (pcolor >= 101 and pcolor <= 109) and not any? exit-doors in-radius 7 ] [
+      ; Jet aléatoire entre 1 et 7
+      let diffusion-roll random 7 + 1
+      ; Vérifier si le jet est inférieur ou égal au smoke-level
+      if diffusion-roll <= [smoke-level] of myself [
+        set smoke-updated true
         set smoke-level 1
         set pcolor gray + 2  ; Premier niveau de gris
       ]
@@ -156,7 +161,7 @@ to go
 
 
   ; Augmentation des niveaux de fumée tous les 10 ticks
-  if ticks mod 300 = 0 [
+  if ticks mod 500 = 0 and not smoke-updated  [
     increase-smoke-level
   ]
 
@@ -253,6 +258,56 @@ to move-randomly
   ; Avancer la tortue d'un pas dans la direction actuelle
   forward 1
 end
+
+to setup-doors
+  let doors (list [[65 13][68 20]] [[65 53][71 58]] [[106 60][117 65]] [[66 65][70 70]] [[39 58][48 62]] [[-24 59][-15 63]] [[-31 106][-27 118]] [[-78 106][-74 118]] [[-57 59][-48 63]] [[-83 59][-74 61]] [[75 -10][78 -1]] [[-18 -33][-14 -24]] [[-83 -105][-76 -102]] )
+
+  foreach doors [i -> fill-doors i]
+end
+
+to fill-doors [coords]
+  let x_min item 0 item 0 coords
+  let y_min item 1 item 0 coords
+  let x_max item 0 last coords
+  let y_max item 1 last coords
+
+
+  ask patches [
+    if (pxcor >= x_min and pxcor <= x_max) and (pycor >= y_min and pycor <= y_max) [
+      set pcolor blue ; ou toute autre couleur souhaitée
+      set patch-type "door" ; type de patch
+    ]
+  ]
+
+end
+
+to setup-exit-doors
+  let portes-coords [[-86 53] [55 -22] [-39 -121]]  ;; Exemple de coordonnées fixes
+
+  ;; Créer les portes-sorties
+  let porte-compteur 0
+  create-exit-doors length portes-coords [
+    if porte-compteur < length portes-coords [
+      let coord item porte-compteur portes-coords
+      setxy first coord last coord
+      set size 12
+      set color green
+      set shape "square"
+      set label "" ;; Cache le label
+      set porte-compteur (porte-compteur + 1)
+    ]
+  ]
+
+  create-exit-doors 1 [
+      let coord [5 -101]
+      setxy first coord last coord
+      set size 14
+      set color green
+      set shape "square"
+      set label "" ;; Cache le label
+    set porte-compteur (porte-compteur + 1)
+  ]
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 229
@@ -322,7 +377,7 @@ SWITCH
 74
 debug-graph
 debug-graph
-0
+1
 1
 -1000
 
@@ -366,7 +421,7 @@ human-speed
 human-speed
 0
 10
-2.0
+1.0
 1
 1
 patch / tick

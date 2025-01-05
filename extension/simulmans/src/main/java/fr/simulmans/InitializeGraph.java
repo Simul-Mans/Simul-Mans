@@ -1,7 +1,5 @@
 package fr.simulmans;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
@@ -9,11 +7,9 @@ import org.nlogo.api.*;
 import org.nlogo.core.Syntax;
 import org.nlogo.core.SyntaxJ;
 import org.nlogo.core.WorldDimensions;
-import org.nlogo.nvm.ExtensionContext;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
 
 public class InitializeGraph implements org.nlogo.api.Command {
 
@@ -33,9 +29,6 @@ public class InitializeGraph implements org.nlogo.api.Command {
 
     @Override
     public void perform(Argument[] args, Context context) throws ExtensionException {
-        BufferedImage playfield = context.getDrawing();
-
-
 
         if (!(context.getAgent() instanceof Turtle turtle)) {
             throw new ExtensionException("Not a Turtle");
@@ -46,13 +39,12 @@ public class InitializeGraph implements org.nlogo.api.Command {
         graph.setTurtleSize(1D);
 
         try {
-            graph.setGraph(createGraph(context, 1));
+            graph.setGraph(createGraph(context));
         } catch (AgentException e) {
             throw new ExtensionException(e);
         }
 
-        int rows = playfield.getHeight();
-        int cols = playfield.getWidth();
+        print(String.valueOf(graph.getGraph().edgeSet().size()), context);
 
         try {
             turtle.setVariable(13, graph);
@@ -61,7 +53,7 @@ public class InitializeGraph implements org.nlogo.api.Command {
         }
     }
 
-    public Graph<Coords, DefaultWeightedEdge> createGraph(Context context, double scaleFactor) throws AgentException {
+    public Graph<Coords, DefaultWeightedEdge> createGraph(Context context) throws AgentException {
         WorldDimensions dimensions = context.world().getDimensions();
 
         // Create the graph
@@ -71,7 +63,7 @@ public class InitializeGraph implements org.nlogo.api.Command {
 
         for (int i = dimensions.minPxcor(); i < dimensions.maxPxcor(); i++) {
             for (int j = dimensions.minPycor(); j < dimensions.maxPycor(); j++) {
-                if (!isBlackOrGreen(context, scaleFactor, i, j)) continue;
+                if (!isBlackOrGreen(context, i, j)) continue;
 
                 Coords node = new Coords(i, j);
                 graph.addVertex(node);
@@ -86,7 +78,7 @@ public class InitializeGraph implements org.nlogo.api.Command {
                     int newRow = i + direction[0];
                     int newCol = j + direction[1];
 
-                    if (isValidCell(newRow, newCol, dimensions) && isBlackOrGreen(context, scaleFactor, newRow, newCol)) {
+                    if (isValidCell(newRow, newCol, dimensions) && isBlackOrGreen(context, newRow, newCol)) {
                         Coords neighbor = new Coords(newRow, newCol);
                         graph.addVertex(neighbor);
 
@@ -107,9 +99,9 @@ public class InitializeGraph implements org.nlogo.api.Command {
         return graph;
     }
 
-    private boolean isBlackOrGreen(Context context, double scaleFactor, int row, int col) throws AgentException {
+    private boolean isBlackOrGreen(Context context, int row, int col) throws AgentException {
 
-        Patch p = context.world().getPatchAt( row / scaleFactor,  col / scaleFactor);
+        Patch p = context.world().getPatchAt( row,  col);
 
         return isBlackPixel(p) || isGreenPixel(p);
     }
@@ -133,18 +125,6 @@ public class InitializeGraph implements org.nlogo.api.Command {
     }
 
     private boolean isValidCell(int row, int col, WorldDimensions dimensions) {
-        return row >= dimensions.minPycor() && col >= dimensions.minPxcor() && row <= dimensions.maxPycor() && col <= dimensions.maxPxcor();
-    }
-
-    private BufferedImage downscaleImage(BufferedImage image, int scaleFactor) {
-        int newWidth = image.getWidth() / scaleFactor;
-        int newHeight = image.getHeight() / scaleFactor;
-        BufferedImage resized = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
-
-        Graphics2D g = resized.createGraphics();
-        g.drawImage(image, 0, 0, newWidth, newHeight, null);
-        g.dispose();
-
-        return resized;
+        return row >= dimensions.minPxcor() && col >= dimensions.minPycor() && row <= dimensions.maxPxcor() && col <= dimensions.maxPycor();
     }
 }
