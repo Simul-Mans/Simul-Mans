@@ -190,10 +190,12 @@ to go
   ; Mouvement des tortues
   if movement-started = 0[
     ask humans [
+
       ifelse smoke-detected [
         go-to-button
       ] [
         check-for-smoke
+        move-randomly
       ]
     ]
   ]
@@ -223,6 +225,8 @@ to go
     ;; Vérifier si un humain est dans la zone de contact d'un bouton
     if any? buttons in-radius 7  and smoke-detected and movement-started = 0[ ;; Rayon d'interaction augmenté
       set movement-started 1
+      fill-doors [[-64 32][-53 37]]
+      fill-doors [[57 31][65 35]]
       set label "ALERTE !" ;; Déclencher une alarme
     ]
 
@@ -250,14 +254,6 @@ end
 
 to move-randomly
   ; Déplacer la tortue dans une direction aléatoire
-  let coords simulmans:getCoordsToExit
-
-  let x item 0 coords
-  let y item 1 coords
-
-  face patch x y
-
-  show (word "x : " x "y : " y)
 
   ; Récupérer la couleur du patch devant la tortue
   let current-color [pcolor] of patch-ahead 3  ; Récupérer la couleur du patch devant
