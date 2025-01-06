@@ -1,10 +1,16 @@
-extensions [ simulmans ]
+extensions [ simulmans time]
 
 globals [my-image
   color-red
   color-green
   movement-started
   smoke-updated
+  fire-x
+  fire-y
+  nb-save
+  nb-mort
+  chrono-start   ;; L'heure de départ du chrono
+  chrono         ;; Le temps écoulé en secondes
 ]
 
 patches-own [
@@ -18,6 +24,7 @@ humans-own [
   current-path
   speed
   smoke-detected
+  etat
 ]
 
 breed [humans human]         ;; Pour les humains
@@ -33,16 +40,17 @@ to setup
   import-pcolors "rdc.bmp"
   set color-red [208 46 38]
   set color-green [26 128 65]
-
+  set chrono 0  ;; Initialiser le chrono à 0
+  set nb-mort 0
+  set nb-save 0
   ;; Calcul des coordonnées d'apparition
 
   let spawnable-coords simulmans:getSpawnableCoords
   set movement-started 0
 
   ;; Créer les humains
-  create-humans 5 [
+  create-humans nombre-personnes [
     let coords simulmans:getRandomSpawnableCoords spawnable-coords
-
     set xcor item 0 coords
     set ycor item 1 coords
     ;;set xcor -20
@@ -52,6 +60,7 @@ to setup
     set size 5
     set color yellow
     set shape "person"
+    set etat 1
     set label "" ;; Cache le label
     set smoke-detected false
     simulmans:initializeGraph
@@ -106,11 +115,11 @@ to setup
   ]
 
   let fire-coords simulmans:getRandomSpawnableCoords spawnable-coords
-  let x item 0 fire-coords
-  let y item 1 fire-coords
+  set fire-x item 0 fire-coords
+  set fire-y item 1 fire-coords
 
   ; Ajouter une source de fumée
-  ask patch x y [  ; Exemple : source de fumée au centre
+  ask patch fire-x fire-y [  ; Exemple : source de fumée au centre
     set smoke-level 1
     set pcolor gray + 2  ; Premier niveau de fumée (gris clair)
   ]
@@ -168,8 +177,15 @@ end
 
 ;; Condition d'augmentation du niveau de fumée (faut changer pour que ça soit quand on a pas eu à ce tick de nouveau patch qui est devenu gris
 to increase-smoke-level
+  ask patch fire-x fire-y [
+    if smoke-level > 0 and smoke-level < 7 [
+      set smoke-level smoke-level + 1
+      set pcolor gray + smoke-level ; Passer au niveau suivant
+    ]
+  ]
   ask patches with [smoke-level > 0 and smoke-level < 7] [
-    set smoke-level smoke-level + 1
+    let max-smoke max [smoke-level] of neighbors ;
+    set smoke-level max-smoke
     set pcolor gray + (smoke-level) ; Passer au niveau suivant
   ]
 end
@@ -200,6 +216,13 @@ to go
     ]
   ]
 
+  if movement-started = 2 [
+    fill-doors [[-64 32][-53 37]]
+    fill-doors [[57 31][65 35]]
+    set movement-started 1
+  ]
+
+
   ;; Déplacement des humains
   if movement-started = 1 [
 
@@ -219,18 +242,21 @@ to go
   ask humans [
     ;; Vérifier si un humain est dans la zone de contact d'une porte-sortie
     if any? exit-doors in-radius 7 [ ;; Rayon d'interaction augmenté
+      set etat 0
+      set nb-save nb-save + 1
       die ;; L'humain est "sauvé" et disparaît
     ]
 
     ;; Vérifier si un humain est dans la zone de contact d'un bouton
     if any? buttons in-radius 7  and smoke-detected and movement-started = 0[ ;; Rayon d'interaction augmenté
-      set movement-started 1
-      fill-doors [[-64 32][-53 37]]
-      fill-doors [[57 31][65 35]]
+      set movement-started 2
       set label "ALERTE !" ;; Déclencher une alarme
     ]
 
     if all? neighbors [smoke-level > 3 or (pcolor >= 10 and pcolor <= 30)] [
+      set etat 0
+      set nb-mort nb-mort + 1
+
       die ;; On tue l'humain si la fumée est trop dense
     ]
   ]
@@ -238,6 +264,13 @@ to go
   if not any? humans [
     stop ; Arrêter la simulation si toutes les tortues sont mortes
   ]
+
+
+  if (chrono-start = 0) [  ;; Si le chrono n'a pas encore démarré
+    set chrono-start ticks  ;; Enregistrer le moment de départ (en ticks)
+  ]
+
+  set chrono (round ((ticks - chrono-start) / 10))  ;; Calculer le temps écoulé en secondes (ajusté pour être plus précis)
 
   tick
 end
@@ -353,10 +386,10 @@ ticks
 30.0
 
 BUTTON
-94
-105
-160
-138
+11
+178
+77
+211
 NIL
 setup
 NIL
@@ -370,10 +403,10 @@ NIL
 1
 
 BUTTON
-84
-241
-147
-274
+88
+178
+151
+211
 NIL
 go
 T
@@ -387,10 +420,10 @@ NIL
 1
 
 SWITCH
-53
-41
-193
-74
+11
+132
+151
+165
 debug-graph
 debug-graph
 1
@@ -404,7 +437,7 @@ PLOT
 269
 Population
 Temps
-Personnes
+Population
 0.0
 10.0
 0.0
@@ -413,9 +446,9 @@ true
 true
 "" ""
 PENS
-"Morts" 1.0 0 -2674135 true "" "plot count turtles with [ label =\"mort\" ]"
-"Vivants" 1.0 0 -1184463 true "" "plot count turtles with [ label =\"vivant\" ]"
-"Évacués" 1.0 0 -11085214 true "" "plot count turtles with [ label =\"évacués\" ]"
+"Morts" 1.0 0 -2674135 true "" "plot nb-mort"
+"Vivants" 1.0 0 -1184463 true "" "plot count humans with [ etat = 1 ]"
+"Évacués" 1.0 0 -11085214 true "" "plot nb-save"
 
 MONITOR
 915
@@ -444,15 +477,15 @@ patch / tick
 HORIZONTAL
 
 SLIDER
-913
+910
 333
-1085
+1082
 366
 nombre-boutons
 nombre-boutons
 1
 7
-3.0
+4.0
 1
 1
 NIL
@@ -474,24 +507,47 @@ NIL
 HORIZONTAL
 
 SLIDER
-910
-421
-1082
-454
+909
+413
+1081
+446
 nombre-signals
 nombre-signals
 0
 7
-7.0
+3.0
 1
 1
 NIL
 HORIZONTAL
 
+SLIDER
+910
+455
+1082
+488
+nombre-personnes
+nombre-personnes
+0
+15
+15.0
+1
+1
+NIL
+HORIZONTAL
+
+TEXTBOX
+449
+10
+671
+54
+SIMUL'MANS
+35
+23.0
+1
+
 @#$#@#$#@
-## WHAT IS IT?
-ON CHANGE EN FRANCAIS LE TITRE QUAND CEST FINI UNE PARTIE
-(à Valider)
+## Le but du projet
 
 Simul'Mans est un projet Netlogo qui est une simulation multi-agents d'une évacuation du bâtiment IC2. Notre mission principale sera de faire une simulation d'évacuation d'un incendie dans le bâtiment.
 
@@ -500,63 +556,52 @@ Pour la simulation, les humains (agent personne) sont représentés par des peti
 L'enceinte du bâtiment est délimité distinctement avec les murs et portes le composant. 
 
 
-## HOW IT WORKS
+## Comment cela fonctionne
 
 Pour initialiser la simulation on charge un fichier contenant l'enceinte du bâtiment que nous avons modéliser à partir des plans du bâtiment. On se sert de (Façon de charger la map au final).
 
 Comportements : 
 
 Agent personne : 
-Une personne est un agent qui se déplace dans un environnement restreint. Son but est d’atteindre une sortie en restant en vie. Une personne peut être plus ou moins paniquée ce qui va influencer sur la rationalité de ses décisions. 
-
-Agent personne responsable : (on voit si on le fait)
-Une personne responsable est semblable à une personne à l’exception qu’elle quittera le bâtiment seulement lorsque tous les individus dont elle est responsable auront évacués les lieux. Cette personne est aussi chargée de l’utilisation des extincteurs.
+Une personne est un agent qui se déplace dans un environnement restreint. Son but est d’atteindre une sortie en restant en vie.
 
 Agent FuméeSansFeu :
 La fumée est un agent qui se propage progressivement avec différents état de "toxicité de l'air ambiant" il détruit un agent personne au simple contact si la toxicité est trop grande. (à voir pour la visibilité) 
 
 
-## HOW TO USE IT
-
-(Protocole des trucs à cliquer pour savoir comment ça marche)
+## Comment s'en servir
 
 #1 : Appuyer sur le bouton "Setup" pour charger la carte 
 
 #2 : Choisir à l'aide des sliders les paramètres souhaités pour la simulation
 
-(séparer en étapes toutes les variables que la personne peut modifier)
+Le nombre de portes de sorties, le nombre de boutons d'alarmes incendie, le nombre de panneaux de signalisation et la vitesse des humains
 
-#3
-
-
-#? Appuyer sur le bouton "Go" pour lancer la simulation
+#3 Appuyer sur le bouton "Go" pour lancer la simulation
 
 
 
-## THINGS TO NOTICE
+## Informations relevées
 
 Pendant le déroulé de la simulation un suivi est possible sur les indicateurs à côté de la simulation pour consulté le nombre de personne restantes (mortes, vivantes et évacuées).
 
-(à voir pour afficher d'autre choses) 
+## Influence des sliders et modifications
 
-## THINGS TO TRY
+En modifiant à l'aide des sliders on peut observer toutes sortes de situations d'incendie.
+Le nombre de sorties peut limiter les options d'échappatoires pour les personnes
+Leur vitesse de déplacement affecte le temps d'évacuation.
+Le nombre de signalisation influe sur la décision des personnes qui se situent en face et aide donc l'évacuation.
 
-(Les choses qu'on peut faire varier dans la simulation)
-
-(suggested things for the user to try to do (move sliders, switches, etc.) with the model)
-
-## EXTENDING THE MODEL
-
-(suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
+## Pistes d'amélioration de la simulation
 
 On peut imaginer traiter d’autres types d’alertes (attaque terroriste, présence de gaz, inondation, écroulement, etc).
 Une vue en 3D serait aussi préférable pour observer les différents étages.
 
-(on mettra ce qu'on a pas fait)
+On peut imaginer également le rôle d'agent personne responsable : 
+Une personne responsable est semblable à une personne à l’exception qu’elle quittera le bâtiment seulement lorsque tous les individus dont elle est responsable auront évacués les lieux. Cette personne est aussi chargée de l’utilisation des extincteurs.
+
 
 ## NETLOGO FEATURES
-
-(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
 
 Lors de la conception de la simulation nous avons mis en place l'emploi de :
 
@@ -565,9 +610,8 @@ Lors de la conception de la simulation nous avons mis en place l'emploi de :
 - blabla
 
 
-## CREDITS AND REFERENCES
+## Crédits et références
 
-(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
 
 Article scientifique sur la simulation de foule en lieu restreint et agents :
 https://hal.inrae.fr/hal-02940570/document
@@ -578,6 +622,8 @@ https://www.scienceinschool.org/fr/article/2012/crowding-fr/
 
 Chaîne youtube d'un chercheur dans les comportements de foules :
 https://www.youtube.com/@Fouloscopie
+
+Remerciement aux pompiers consultés.
 @#$#@#$#@
 default
 true
