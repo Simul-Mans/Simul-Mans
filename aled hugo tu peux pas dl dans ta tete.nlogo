@@ -184,13 +184,13 @@ end
 to go
 
   ;; Diffusion de fumée
-  if ticks mod 3 = 0 [
+  if ticks mod 2 = 0 [
     diffuse-smoke
   ]
 
 
   ;; Augmentation des niveaux de fumée
-  if ticks mod 500 = 0 and not smoke-updated  [
+  if ticks mod 180 = 0 and not smoke-updated  [
     increase-smoke-level
   ]
 
@@ -338,7 +338,7 @@ to move-randomly
 end
 
 to setup-doors
-  let doors (list [[65 13][68 20]] [[65 53][71 58]] [[106 60][117 65]] [[66 65][70 70]] [[39 58][48 62]] [[-24 59][-15 63]] [[-31 106][-27 118]] [[-78 106][-74 118]] [[-57 59][-48 63]] [[-83 59][-74 61]] [[75 -10][78 -1]] [[-18 -33][-14 -24]] [[-83 -105][-76 -102]] )
+    let doors (list [[66 13][70 20]] [[67 52][71 58]] [[106 60][117 65]] [[66 65][70 70]] [[39 58][48 62]] [[-24 59][-15 63]] [[-31 105][-27 118]] [[-78 105][-74 118]] [[-57 59][-48 63]] [[-83 59][-74 61]] [[75 -10][78 -1]] [[-18 -33][-14 -24]] [[-83 -105][-76 -102]] )
 
   foreach doors [i -> fill-door i]
 end
@@ -549,7 +549,7 @@ nombre-personnes
 nombre-personnes
 0
 15
-8.0
+2.0
 1
 1
 NIL

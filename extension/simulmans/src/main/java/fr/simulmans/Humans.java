@@ -5,6 +5,9 @@ import org.jgrapht.graph.DefaultWeightedEdge;
 import org.nlogo.api.Turtle;
 import org.nlogo.api.AgentException;
 
+/**
+ * Classe utilitaire pour les Humans
+ */
 public class Humans {
 
     public static final String BREED = "HUMAN";

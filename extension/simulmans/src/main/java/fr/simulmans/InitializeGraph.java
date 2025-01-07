@@ -27,6 +27,7 @@ public class InitializeGraph implements org.nlogo.api.Command {
     @Override
     public void perform(Argument[] args, Context context) throws ExtensionException {
 
+        // On récupère la turtle
         if (!(context.getAgent() instanceof Turtle turtle)) {
             throw new ExtensionException("Not a Turtle");
         }
@@ -38,6 +39,12 @@ public class InitializeGraph implements org.nlogo.api.Command {
         }
     }
 
+    /**
+     * Computes the graph for the pathfinding algorithm
+     * @param context The NetLogo Context
+     * @return The newly constructed graph
+     * @throws AgentException In case a NetLogo API call fails
+     */
     public Graph<Coords, DefaultWeightedEdge> createGraph(Context context) throws AgentException {
         WorldDimensions dimensions = context.world().getDimensions();
 
@@ -46,6 +53,7 @@ public class InitializeGraph implements org.nlogo.api.Command {
 
         boolean debug = (boolean) context.world().observer().getVariable(context.world().observerOwnsIndexOf("DEBUG-GRAPH")) &&         !(context.getAgent() instanceof Turtle);
 
+        // Iterate
         for (int i = dimensions.minPxcor(); i < dimensions.maxPxcor(); i++) {
             for (int j = dimensions.minPycor(); j < dimensions.maxPycor(); j++) {
                 if (!(isBlackOrBlue(context, i, j))) continue;
