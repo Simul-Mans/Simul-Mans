@@ -39,25 +39,6 @@ to setup
   let spawnable-coords simulmans:getSpawnableCoords
   set movement-started 0
 
-  ;; Créer les humains
-  create-humans 5 [
-    let coords simulmans:getRandomSpawnableCoords spawnable-coords
-
-    set xcor item 0 coords
-    set ycor item 1 coords
-    ;;set xcor -20
-   ;; set ycor 70
-    set speed human-speed
-    set ticks-since-last-pathfinding 5
-    set size 5
-    set color yellow
-    set shape "person"
-    set label "" ;; Cache le label
-    set smoke-detected false
-    simulmans:initializeGraph
-  ]
-
-
   ;; Liste des coordonnées pour les portes-sorties et les boutons
   setup-exit-doors
 
@@ -96,6 +77,23 @@ to setup
     ]
   ]
 
+  ;; Créer les humains
+  create-humans 15 [
+    let coords simulmans:getRandomSpawnableCoords spawnable-coords
+
+    set xcor item 0 coords
+    set ycor item 1 coords
+    ;;set xcor -20
+   ;; set ycor 70
+    set speed human-speed
+    set ticks-since-last-pathfinding 5
+    set size 5
+    set color yellow
+    set shape "person"
+    set label "" ;; Cache le label
+    set smoke-detected false
+    simulmans:initializeGraph
+  ]
 
   ;; Partie Fumée !!!!
 
@@ -215,6 +213,13 @@ to go
   ]
   ;; Gérer les interactions
   ask humans [
+
+    let turtle-id who
+
+    ask patches in-cone 20 65 with [smoke-level > 0 and not (pcolor >= 10 and pcolor <= 30)]  [ ;; Champ de vision de l'humain
+      simulmans:registerSmoke turtle-id
+    ]
+
     ;; Vérifier si un humain est dans la zone de contact d'une porte-sortie
     if any? exit-doors in-radius 7 [ ;; Rayon d'interaction augmenté
       die ;; L'humain est "sauvé" et disparaît

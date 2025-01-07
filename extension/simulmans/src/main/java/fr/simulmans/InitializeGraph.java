@@ -8,9 +8,6 @@ import org.nlogo.core.Syntax;
 import org.nlogo.core.SyntaxJ;
 import org.nlogo.core.WorldDimensions;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
-
 public class InitializeGraph implements org.nlogo.api.Command {
 
     private final int[][] directions = {
@@ -34,20 +31,8 @@ public class InitializeGraph implements org.nlogo.api.Command {
             throw new ExtensionException("Not a Turtle");
         }
 
-        TurtleGraph graph = new TurtleGraph();
-
-        graph.setTurtleSize(1D);
-
         try {
-            graph.setGraph(createGraph(context));
-        } catch (AgentException e) {
-            throw new ExtensionException(e);
-        }
-
-        print(String.valueOf(graph.getGraph().edgeSet().size()), context);
-
-        try {
-            turtle.setVariable(13, graph);
+            Humans.setGraph(createGraph(context), turtle);
         } catch (AgentException e) {
             throw new ExtensionException(e);
         }

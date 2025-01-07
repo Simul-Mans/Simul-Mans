@@ -1,6 +1,6 @@
 package fr.simulmans;
 
-import org.apache.commons.lang3.stream.Streams;
+import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.AStarShortestPath;
 import org.jgrapht.graph.DefaultWeightedEdge;
@@ -11,7 +11,6 @@ import org.nlogo.core.SyntaxJ;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class CoordsToExit implements Reporter {
     @Override
@@ -44,7 +43,7 @@ public class CoordsToExit implements Reporter {
 //            return builder.toLogoList();
 //        }
 
-        TurtleGraph graph = (TurtleGraph) turtle.getVariable(13);
+        Graph<Coords, DefaultWeightedEdge> graph = Humans.getGraph(turtle);
 
         // On récupère les sorties et leurs coordonnées
         AgentSet doors = context.world().getBreed("EXIT-DOORS");
@@ -53,11 +52,11 @@ public class CoordsToExit implements Reporter {
             throw new ExtensionException("No exit doors found. Check that the breed exists");
         }
 
-        AStarShortestPath<Coords, DefaultWeightedEdge> aStarAlgorithm = new AStarShortestPath<>(graph.getGraph(), (v1, v2) -> 0);
+        AStarShortestPath<Coords, DefaultWeightedEdge> aStarAlgorithm = new AStarShortestPath<>(graph, (v1, v2) -> 0);
 
         Coords turtleCoords = new Coords((int) turtle.xcor(), (int) turtle.ycor());
 
-        if(!graph.getGraph().containsVertex(turtleCoords)) {
+        if(!graph.containsVertex(turtleCoords)) {
             throw new ExtensionException("Turtle is not present in graph (%d / %d)".formatted(turtleCoords.x(), turtleCoords.y()));
         }
 
@@ -67,7 +66,7 @@ public class CoordsToExit implements Reporter {
             Turtle exit = (Turtle) a;
             Coords exitCoords = new Coords((int) exit.xcor(), (int) exit.ycor());
 
-            if(!graph.getGraph().containsVertex(turtleCoords)) {
+            if(!graph.containsVertex(turtleCoords)) {
                 throw new ExtensionException("Door is not present in graph (%d / %d)".formatted(exitCoords.x(), exitCoords.y()));
             }
 

@@ -1,6 +1,7 @@
 package fr.simulmans;
 
 import org.apache.commons.lang3.stream.Streams;
+import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.AStarShortestPath;
 import org.jgrapht.graph.DefaultWeightedEdge;
@@ -21,16 +22,16 @@ public class CoordsToAlarm implements Reporter {
 
         Integer speed = ((Double) turtle.getVariable(16)).intValue();
 
-        TurtleGraph graph = (TurtleGraph) turtle.getVariable(13);
+        Graph<Coords, DefaultWeightedEdge> graph = Humans.getGraph(turtle);
 
         // On récupère les alarmes incendies et leurs coordonnées
         AgentSet alarms = context.world().getBreed("BUTTONS");
 
-        AStarShortestPath<Coords, DefaultWeightedEdge> aStarAlgorithm = new AStarShortestPath<>(graph.getGraph(), (v1, v2) -> 0);
+        AStarShortestPath<Coords, DefaultWeightedEdge> aStarAlgorithm = new AStarShortestPath<>(graph, (v1, v2) -> 0);
 
         Coords turtleCoords = new Coords((int) turtle.xcor(), (int) turtle.ycor());
 
-        if(!graph.getGraph().containsVertex(turtleCoords)) {
+        if(!graph.containsVertex(turtleCoords)) {
             throw new ExtensionException("Turtle is not present in graph (%d / %d)".formatted(turtleCoords.x(), turtleCoords.y()));
         }
 
@@ -40,7 +41,7 @@ public class CoordsToAlarm implements Reporter {
             Turtle alarm = (Turtle) a;
             Coords alarmCoords = new Coords((int) alarm.xcor(), (int) alarm.ycor());
 
-            if(!graph.getGraph().containsVertex(turtleCoords)) {
+            if(!graph.containsVertex(turtleCoords)) {
                 throw new ExtensionException("Alarm is not present in graph (%d / %d)".formatted(alarmCoords.x(), alarmCoords.y()));
             }
 

@@ -6,8 +6,6 @@ import org.nlogo.core.Syntax;
 import org.nlogo.core.SyntaxJ;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class SpawnableAreaCoords implements Reporter {
     @Override

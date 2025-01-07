@@ -5,30 +5,43 @@ import org.nlogo.core.Breed;
 import org.nlogo.core.LogoList;
 import org.nlogo.core.Syntax;
 import org.nlogo.core.SyntaxJ;
+import org.nlogo.log.LogManager;
+import org.nlogo.log.LogManager$;
 import scala.collection.JavaConverters;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
 public class Entry extends DefaultClassManager {
 
+    private static Method log;
+
+    private static final Logger logger = NetLogger.getLogger("fr.simulmans");
+
     @Override
     public void runOnce(ExtensionManager em) throws ExtensionException {
 
-        Logger logger = Logger.getLogger("fr.simulmans");
-
         super.runOnce(em);
 
-        logger.info("Coucou l'extension");
+        logger.entering("Entry", "runOnce");
 
+        //
 
+        //
+
+        logger.exiting("Entry", "runOnce");
     }
 
     @Override
     public void load(PrimitiveManager primManager) throws ExtensionException {
+
+        logger.entering("Entry", "load");
+
+        //
+
         primManager.addPrimitive("initializeGraph", new InitializeGraph());
-        primManager.addPrimitive("getGraphNumberOfNodes", new GetGraphNumberOfNodes());
         primManager.addPrimitive("getCoordsToAlarm", new CoordsToAlarm());
         primManager.addPrimitive("getCoordsToExit", new CoordsToExit());
         primManager.addPrimitive("breeds", new Breeds());
@@ -36,6 +49,10 @@ public class Entry extends DefaultClassManager {
         primManager.addPrimitive("getSpawnableCoords", new SpawnableAreaCoords());
         primManager.addPrimitive("getRandomSpawnableCoords", new SpawnableCoords());
         primManager.addPrimitive("debugGraph", new DebugAgents());
+        primManager.addPrimitive("registerSmoke", new RegisterSmoke());
+        //
+
+        logger.exiting("Entry", "load");
     }
 
     public static class Breeds implements Reporter {
@@ -79,9 +96,9 @@ public class Entry extends DefaultClassManager {
                 throw new ExtensionException("Not a Turtle");
             }
 
-            TurtleGraph graph = (TurtleGraph) turtle.getVariable(13);
+            var graph = Humans.getGraph(turtle);
 
-            for(Coords coords : graph.getGraph().vertexSet()) {
+            for(Coords coords : graph.vertexSet()) {
                 llb.add("\n%s %s".formatted(coords.x(), coords.y()));
             }
 
