@@ -5,13 +5,9 @@ import org.nlogo.core.Breed;
 import org.nlogo.core.LogoList;
 import org.nlogo.core.Syntax;
 import org.nlogo.core.SyntaxJ;
-import org.nlogo.log.LogManager;
-import org.nlogo.log.LogManager$;
 import scala.collection.JavaConverters;
 
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 public class Entry extends DefaultClassManager {
@@ -58,8 +54,6 @@ public class Entry extends DefaultClassManager {
     public static class Breeds implements Reporter {
         public Syntax getSyntax() {
             return SyntaxJ.reporterSyntax(
-                    // we take in int[] {modelNumber, varName}
-                    // and return a number
                     Syntax.ListType());
         }
 

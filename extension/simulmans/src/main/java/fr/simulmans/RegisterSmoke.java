@@ -36,7 +36,6 @@ public class RegisterSmoke implements Command {
         Coords patchCoords = new Coords(patch.pxcor(), patch.pycor());
 
         // On met à jour le graphe de ta turtle (On pénalise les chemin voisins au patch concerné)
-
         for(DefaultWeightedEdge edge : graph.incomingEdgesOf(patchCoords)) {
             graph.setEdgeWeight(edge, smokeLevel * smokeMalus);
         }

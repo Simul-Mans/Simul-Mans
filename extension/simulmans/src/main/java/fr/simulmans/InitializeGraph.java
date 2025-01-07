@@ -53,11 +53,12 @@ public class InitializeGraph implements org.nlogo.api.Command {
 
         boolean debug = (boolean) context.world().observer().getVariable(context.world().observerOwnsIndexOf("DEBUG-GRAPH")) &&         !(context.getAgent() instanceof Turtle);
 
-        // Iterate
+        // Iterate over every possible values
         for (int i = dimensions.minPxcor(); i < dimensions.maxPxcor(); i++) {
             for (int j = dimensions.minPycor(); j < dimensions.maxPycor(); j++) {
                 if (!(isBlackOrBlue(context, i, j))) continue;
 
+                // Create the node
                 Coords node = new Coords(i, j);
                 graph.addVertex(node);
 
@@ -67,6 +68,7 @@ public class InitializeGraph implements org.nlogo.api.Command {
                     p.setVariable(org.nlogo.agent.Patch.VAR_PCOLOR, 138D);
                 }
 
+                // Create the edges
                 for (int[] direction : directions) {
                     int newRow = i + direction[0];
                     int newCol = j + direction[1];
