@@ -1,6 +1,7 @@
-extensions [ simulmans time]
+extensions [ simulmans time ]
 
-globals [my-image
+globals [
+  my-image
   color-red
   color-green
   movement-started
@@ -623,6 +624,11 @@ Une personne est un agent qui se déplace dans un environnement restreint. Son b
 Agent FuméeSansFeu :
 La fumée est un agent qui se propage progressivement avec différents état de "toxicité de l'air ambiant" il détruit un agent personne au simple contact si la toxicité est trop grande. (à voir pour la visibilité) 
 
+Cœur du système :
+Le cœur du système est l'algorithme de gestion des déplacements. Basé sur l'algorithme A*
+ce système nous permet de guider nos agents humain dans un environnement variable. La force de ce système repose sur la réprésentation sous forme de graphe de notre environnement. Ainsi, en modifiant notre graphe et le poids de ses arrêtes, il nous est possible de customiser leur comportement.
+
+Étant donné la complexité que serait d'implémenter un tel système dans NetLogo, nous avons fait le choix d'implementer ce système dans une extension NetLogo développée spécialement pour ce projet et codée en Java.
 
 ## Comment s'en servir
 
@@ -633,7 +639,6 @@ La fumée est un agent qui se propage progressivement avec différents état de 
 Le nombre de portes de sorties, le nombre de boutons d'alarmes incendie, le nombre de panneaux de signalisation et la vitesse des humains
 
 #3 Appuyer sur le bouton "Go" pour lancer la simulation
-
 
 
 ## Informations relevées
@@ -656,13 +661,13 @@ On peut imaginer également le rôle d'agent personne responsable :
 Une personne responsable est semblable à une personne à l’exception qu’elle quittera le bâtiment seulement lorsque tous les individus dont elle est responsable auront évacués les lieux. Cette personne est aussi chargée de l’utilisation des extincteurs.
 
 
-## NETLOGO FEATURES
+## Fonctionalités NetLogo
 
 Lors de la conception de la simulation nous avons mis en place l'emploi de :
 
-- blabla
-- blabla
-- blabla
+- La création d'une extension via l'API NetLogo
+- L'utilisation de la fonctionalité d'espèces de NetLogo
+- L'extension `time` de NetLogo 
 
 
 ## Crédits et références
