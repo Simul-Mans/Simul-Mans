@@ -691,13 +691,13 @@ Flèche verte : indication d'issue de secours
 Simul'Mans est un projet Netlogo qui est une simulation multi-agents d'une évacuation du bâtiment IC2. Notre mission principale sera de faire une simulation d'évacuation d'un incendie dans le bâtiment.
 
 
-Pour la simulation, les humains (agent personne) sont représentés par des petits bonhommes de toutes les couleurs. Les foyers de flammes en orange (partant du principe qu'en intérieur la propagation du feu n'est pas (mot pour rapide mais plus scientifique). De la fumée de plus en plus sombre symbole de sa densité se dégage des flammes et se propage dans le bâtiment.
+Pour la simulation, les humains (agent personne) sont représentés par des petits bonhommes. Les foyers de flammes sont directement une fumée apparente en gris. De la fumée de plus en plus sombre symbole de sa densité se dégage et se propage dans le bâtiment.
 L'enceinte du bâtiment est délimité distinctement avec les murs et portes le composant. 
 
 
 ## Comment cela fonctionne
 
-Pour initialiser la simulation on charge un fichier contenant l'enceinte du bâtiment que nous avons modéliser à partir des plans du bâtiment. On se sert de (Façon de charger la map au final).
+Pour initialiser la simulation on charge un fichier contenant l'enceinte du bâtiment que nous avons modéliser à partir des plans du bâtiment. On se sert du reporter Pcolor de Net logo pour charger notre map.
 
 Comportements : 
 
@@ -705,7 +705,7 @@ Agent personne :
 Une personne est un agent qui se déplace dans un environnement restreint. Son but est d’atteindre une sortie en restant en vie.
 
 Agent FuméeSansFeu :
-La fumée est un agent qui se propage progressivement avec différents état de "toxicité de l'air ambiant" il détruit un agent personne au simple contact si la toxicité est trop grande. (à voir pour la visibilité) 
+La fumée est un agent qui se propage progressivement avec différents état de "toxicité de l'air ambiant" il détruit un agent personne au simple contact si la toxicité est trop grande.
 
 Cœur du système :
 Le cœur du système est l'algorithme de gestion des déplacements. Basé sur l'algorithme A*
