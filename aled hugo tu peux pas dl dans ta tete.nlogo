@@ -36,6 +36,11 @@ breed [signals signal]       ;; Pour les boutons
 
 to setup
   clear-all
+
+  ask patches [
+    set pcolor white
+  ]
+
   ; Import the image
   import-pcolors "rdc.bmp"
   set color-red [208 46 38]
@@ -86,6 +91,8 @@ to setup
     ]
   ]
 
+  setup-doors
+
   ;; Créer les humains
   create-humans nombre-personnes [
     let coords simulmans:getRandomSpawnableCoords spawnable-coords
@@ -119,17 +126,13 @@ to setup
     set pcolor gray + 2  ; Premier niveau de fumée (gris clair)
   ]
 
-  setup-doors
-
   if debug-graph [
    print simulmans:debugGraph
   ]
 
-
-
-
-
   reset-ticks
+
+  tick
 end
 
 
@@ -192,7 +195,7 @@ end
 to go
 
   ; Diffusion de fumée
-  if ticks mod 5 = 0 [
+  if ticks mod 3 = 0 [
     diffuse-smoke
   ]
 
@@ -216,8 +219,8 @@ to go
   ]
 
   if movement-started = 2 [
-    fill-doors [[-64 32][-53 37]]
-    fill-doors [[57 31][65 35]]
+    fill-door [[-64 32][-53 37]]
+    fill-door [[57 31][65 35]]
     set movement-started 1
   ]
 
@@ -236,7 +239,7 @@ to go
     let turtle-id who
 
     ask patches in-cone 20 65 with [smoke-level > 0 and not (pcolor >= 10 and pcolor <= 30)]  [ ;; Champ de vision de l'humain
-      simulmans:registerSmoke turtle-id
+      ;;simulmans:registerSmoke turtle-id
     ]
 
     ;; Vérifier si un humain est dans la zone de contact d'une porte-sortie
@@ -275,45 +278,74 @@ to go
 end
 
 to go-to-button
+  print (word "go-to-button : " "entry")
+
   let coords simulmans:getCoordsToAlarm
+
+    print (word "go-to-button : " "coords obtained")
 
   let x item 0 coords
   let y item 1 coords
 
+  print (word "go-to-button : " "facing patch")
   face patch x y
 
-  let next-patch-distance 1 + speed
+  let next-patch-distance speed
 
-  while [any? patches in-cone next-patch-distance 120 with [not is-walkable pcolor]] [
+  print (word "turtle : " "x : " xcor "y :" ycor)
+
+  print (word "dest : " "x : " x "y :" y)
+
+  print (word "go-to-button : " "checking next patch")
+  while [any? patches in-cone next-patch-distance 120 with [not is-walkable pcolor (smoke-level > 0)]] [
     set heading random 360  ; Change direction randomly
   ]
 
-  forward speed
+  print (word "go-to-button : " "moving")
+
+  setxy x y
+
+  print (word "go-to-button : " "end")
 end
 
 to move-to-exit
+
+  print (word "move-to-exit : " "entry")
+
   let coords simulmans:getCoordsToExit
+
+    print (word "move-to-exit : " "coords obtained")
 
   let x item 0 coords
   let y item 1 coords
 
+  print (word "move-to-exit : " "facing patch")
   face patch x y
 
-  let next-patch-distance 1 + speed
+  let next-patch-distance speed
 
-  while [any? patches in-cone next-patch-distance 120 with [not is-walkable pcolor]] [
+  print (word "turtle : " "x : " xcor "y :" ycor)
+
+  print (word "dest : " "x : " x "y :" y)
+
+  print (word "move-to-exit : " "checking next patch")
+  while [any? patches in-cone next-patch-distance 120 with [not is-walkable pcolor (smoke-level > 0)]] [
     set heading random 360  ; Change direction randomly
   ]
 
-  forward speed
+  print (word "move-to-exit : " "moving")
+
+  setxy x y
+
+  print (word "move-to-exit : " "end")
 end
 
 to-report is-wall [in_color]
   report in_color >= 10 and in_color <= 30
 end
 
-to-report is-walkable [in_color]
-  report ((in_color mod 10) = 0) or (in_color >= 101 and in_color <= 109)
+to-report is-walkable [in_color is_smoke]
+  report ((in_color mod 10) = 0) or (in_color >= 101 and in_color <= 109) or (in_color >= 0 and in_color <= 5) or (in_color >= 10 and in_color < 13) or is_smoke
 end
 
 to move-randomly
@@ -331,7 +363,7 @@ to move-randomly
 
   let next-patch-distance 1 + speed
 
-  while [any? patches in-cone next-patch-distance 120 with [not is-walkable pcolor]] [
+  while [any? patches in-cone next-patch-distance 120 with [not is-walkable pcolor (smoke-level > 0)]] [
     set heading random 360  ; Change direction randomly
   ]
 
@@ -344,10 +376,10 @@ end
 to setup-doors
   let doors (list [[65 13][68 20]] [[65 53][71 58]] [[106 60][117 65]] [[66 65][70 70]] [[39 58][48 62]] [[-24 59][-15 63]] [[-31 106][-27 118]] [[-78 106][-74 118]] [[-57 59][-48 63]] [[-83 59][-74 61]] [[75 -10][78 -1]] [[-18 -33][-14 -24]] [[-83 -105][-76 -102]] )
 
-  foreach doors [i -> fill-doors i]
+  foreach doors [i -> fill-door i]
 end
 
-to fill-doors [coords]
+to fill-door [coords]
   let x_min item 0 item 0 coords
   let y_min item 1 item 0 coords
   let x_max item 0 last coords

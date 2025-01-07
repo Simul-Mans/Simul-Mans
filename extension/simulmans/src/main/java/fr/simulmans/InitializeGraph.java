@@ -48,7 +48,7 @@ public class InitializeGraph implements org.nlogo.api.Command {
 
         for (int i = dimensions.minPxcor(); i < dimensions.maxPxcor(); i++) {
             for (int j = dimensions.minPycor(); j < dimensions.maxPycor(); j++) {
-                if (!(isBlackOrGreen(context, i, j))) continue;
+                if (!(isBlackOrBlue(context, i, j))) continue;
 
                 Coords node = new Coords(i, j);
                 graph.addVertex(node);
@@ -63,7 +63,7 @@ public class InitializeGraph implements org.nlogo.api.Command {
                     int newRow = i + direction[0];
                     int newCol = j + direction[1];
 
-                    if (isValidCell(newRow, newCol, dimensions) && isBlackOrGreen(context, newRow, newCol)) {
+                    if (isValidCell(newRow, newCol, dimensions) && isBlackOrBlue(context, newRow, newCol)) {
                         Coords neighbor = new Coords(newRow, newCol);
                         graph.addVertex(neighbor);
 
@@ -84,11 +84,11 @@ public class InitializeGraph implements org.nlogo.api.Command {
         return graph;
     }
 
-    private boolean isBlackOrGreen(Context context, int row, int col) throws AgentException {
+    private boolean isBlackOrBlue(Context context, int row, int col) throws AgentException {
 
         Patch p = context.world().getPatchAt( row,  col);
 
-        return isBlackPixel(p) || isGreenPixel(p);
+        return isBlackPixel(p) || isBluePixel(p);
     }
 
     private boolean isRed(Context context, int row, int col) throws AgentException {
@@ -112,10 +112,10 @@ public class InitializeGraph implements org.nlogo.api.Command {
         return (color % 10 == 0) || (color >= 0 && color <= 5) || (color >= 10 && color < 13); // Black pixel
     }
 
-    private boolean isGreenPixel(Patch p) {
+    private boolean isBluePixel(Patch p) {
         Double color = (Double) p.pcolor();
 
-        return (color >= 51 && color <= 59) || (color >= 61 && color <= 69) ; // Black pixel
+        return (color >= 101 && color <= 109);
     }
 
     private boolean isValidCell(int row, int col, WorldDimensions dimensions) {
