@@ -48,7 +48,7 @@ public class InitializeGraph implements org.nlogo.api.Command {
 
         for (int i = dimensions.minPxcor(); i < dimensions.maxPxcor(); i++) {
             for (int j = dimensions.minPycor(); j < dimensions.maxPycor(); j++) {
-                if (!isBlackOrGreen(context, i, j)) continue;
+                if (!(isBlackOrGreen(context, i, j))) continue;
 
                 Coords node = new Coords(i, j);
                 graph.addVertex(node);
@@ -67,7 +67,7 @@ public class InitializeGraph implements org.nlogo.api.Command {
                         Coords neighbor = new Coords(newRow, newCol);
                         graph.addVertex(neighbor);
 
-                        double weight = 1;
+                        double weight = 25;
 
                         DefaultWeightedEdge edge = graph.addEdge(node, neighbor);
 
@@ -91,6 +91,15 @@ public class InitializeGraph implements org.nlogo.api.Command {
         return isBlackPixel(p) || isGreenPixel(p);
     }
 
+    private boolean isRed(Context context, int row, int col) throws AgentException {
+
+        Patch p = context.world().getPatchAt( row,  col);
+
+        Double color = (Double) p.pcolor();
+
+        return (color >= 11 && color <= 18);
+    }
+
 
     @Override
     public Syntax getSyntax() {
@@ -100,7 +109,7 @@ public class InitializeGraph implements org.nlogo.api.Command {
     private boolean isBlackPixel(Patch p) {
         Double color = (Double) p.pcolor();
 
-        return color % 10 == 0 ; // Black pixel
+        return (color % 10 == 0) || (color >= 0 && color <= 5) || (color >= 10 && color < 13); // Black pixel
     }
 
     private boolean isGreenPixel(Patch p) {

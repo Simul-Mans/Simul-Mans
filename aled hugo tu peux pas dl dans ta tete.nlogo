@@ -119,11 +119,15 @@ to setup
     set pcolor gray + 2  ; Premier niveau de fumée (gris clair)
   ]
 
+  setup-doors
+
   if debug-graph [
    print simulmans:debugGraph
   ]
 
-  setup-doors
+
+
+
 
   reset-ticks
 end
@@ -222,14 +226,7 @@ to go
   if movement-started = 1 [
 
     ask humans [
-      ;; move-randomly
-      let coords simulmans:getCoordsToExit
-
-      let x item 0 coords
-      let y item 1 coords
-
-      face patch x y
-      forward speed
+      move-to-exit
     ]
 
   ]
@@ -284,40 +281,64 @@ to go-to-button
   let y item 1 coords
 
   face patch x y
-  forward speed
-end
 
-to move-randomly
-  ; Déplacer la tortue dans une direction aléatoire
+  let next-patch-distance 1 + speed
 
-  ; Récupérer la couleur du patch devant la tortue
-  let current-color [pcolor] of patch-ahead 3  ; Récupérer la couleur du patch devant
-
-  ; Afficher la couleur du patch (utile pour le débogage)
-  ;show (word "Patch color: " current-color)    ; Afficher la couleur du patch
-
-  ; Vérifier si la couleur du patch est dans l'intervalle du rouge (par exemple, entre 0 et 20)
-  if current-color >= 10 and current-color <= 30 [
-    ; Si la couleur est dans l'intervalle rouge, changer de direction
-    set heading random 360  ; Changer de direction
-  ]
-
-  while [[pcolor] of patch-right-and-ahead 5 3 >= 10 and [pcolor] of patch-right-and-ahead 5 3 <= 30 ] [
+  while [any? patches in-cone next-patch-distance 120 with [not is-walkable pcolor]] [
     set heading random 360  ; Change direction randomly
   ]
 
-  while [[pcolor] of patch-left-and-ahead 5 3 >= 10 and [pcolor] of patch-left-and-ahead 5 3 <= 30 ] [
-   set heading random 360  ; Change direction randomly
+  forward speed
+end
+
+to move-to-exit
+  let coords simulmans:getCoordsToExit
+
+  let x item 0 coords
+  let y item 1 coords
+
+  face patch x y
+
+  let next-patch-distance 1 + speed
+
+  while [any? patches in-cone next-patch-distance 120 with [not is-walkable pcolor]] [
+    set heading random 360  ; Change direction randomly
   ]
 
-  ; Vérifier si la couleur du patch est dans l'intervalle du vert (par exemple, entre 50 et 70)
-  if current-color >= 40 and current-color <= 70 [
-    ; Si la couleur est dans l'intervalle vert, arrêter la tortue
-    stop  ; Arrêter la tortue si elle touche du vert
+  forward speed
+end
+
+to-report is-wall [in_color]
+  report in_color >= 10 and in_color <= 30
+end
+
+to-report is-walkable [in_color]
+  report ((in_color mod 10) = 0) or (in_color >= 101 and in_color <= 109)
+end
+
+to move-randomly
+
+  ;; Jet pour le déplacement
+  let move (random 2) = 1
+
+  ;; Jet pour le changement de direction
+  let change-direction (random 6) = 1
+
+  if change-direction [
+    set heading random 360
   ]
 
-  ; Avancer la tortue d'un pas dans la direction actuelle
-  forward 1
+
+  let next-patch-distance 1 + speed
+
+  while [any? patches in-cone next-patch-distance 120 with [not is-walkable pcolor]] [
+    set heading random 360  ; Change direction randomly
+  ]
+
+  if move [
+    forward speed
+  ]
+
 end
 
 to setup-doors

@@ -20,5 +20,4 @@ public class Humans {
     public static Double getSpeed(Turtle t) { return (double) t.getVariable(SPEED_VARIABLE); }
     public static void setSpeed(Double speed, Turtle t) throws AgentException {  t.setVariable(SPEED_VARIABLE, speed); }
 
-
 }
