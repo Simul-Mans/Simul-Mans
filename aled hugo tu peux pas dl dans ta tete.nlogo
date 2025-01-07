@@ -1,9 +1,6 @@
 extensions [ simulmans time ]
 
 globals [
-  my-image
-  color-red
-  color-green
   movement-started
   smoke-updated
   fire-x
@@ -20,12 +17,12 @@ patches-own [
 ]
 
 humans-own [
-  graph
-  ticks-since-last-pathfinding
-  current-path
-  speed
-  smoke-detected
-  etat
+  graph ;; Le graphe utilisé pour le déplacement
+  ticks-since-last-pathfinding ;; Stockage du dernier calcul de trajectoire
+  current-path ;; Chemin actuellement suivi
+  speed ;; Vitesse de l'humain
+  smoke-detected ;; Si l'humain à détecter de la fumée
+  etat ;; Son état actuel (vivant, mort, évacué)
 ]
 
 breed [humans human]         ;; Pour les humains
@@ -34,34 +31,30 @@ breed [buttons button]       ;; Pour les boutons
 breed [signals signal]       ;; Pour les boutons
 
 
-
 to setup
   clear-all
 
-  ask patches [
+  ;; Chargement de la map
+  ask patches [ ;; On reinitialise tout les patchs au blanc pour éviter des bords noir autour de notre image
     set pcolor white
   ]
 
-  ; Import the image
-  import-pcolors "rdc.bmp"
-  set color-red [208 46 38]
-  set color-green [26 128 65]
+  import-pcolors "rdc.bmp" ;; On charge notre map à partir de notre image
   set chrono 0  ;; Initialiser le chrono à 0
   set nb-mort 0
   set nb-save 0
-  ;; Calcul des coordonnées d'apparition
-
-  let spawnable-coords simulmans:getSpawnableCoords
   set movement-started 0
 
-  ;; Liste des coordonnées pour les portes-sorties et les boutons
+  ;; Calcul des coordonnées d'apparition
+  let spawnable-coords simulmans:getSpawnableCoords
+
+  ;; On place les issues de secours
   setup-exit-doors
 
+  ;; On place les déclancheurs d'alarme
   let boutons-coords [[-71 51] [-20 48] [-50 5] [-25 -21] [-14 -86] [9.0 4.0] [53 -11] [65 48]]
   set boutons-coords shuffle boutons-coords
 
-
-  ;; Créer les boutons
   let bouton-compteur 0
   create-buttons nombre-boutons [
     if bouton-compteur < nombre-boutons [
@@ -75,9 +68,10 @@ to setup
     ]
   ]
 
+  ;; On place la signalisation
   let signalisation-coords [[-59 54 270] [4 53 270] [57 52 270] [44 -2 180] [-59 2 0] [-29 -28 90] [14 0 160] ]
   set signalisation-coords shuffle signalisation-coords
-  ;; Créer les signalisation
+
   let signal-compteur 0
   create-signals nombre-signals[
     if signal-compteur < nombre-signals [
@@ -92,9 +86,10 @@ to setup
     ]
   ]
 
+  ;; On place les portes
   setup-doors
 
-  ;; Créer les humains
+  ;; On créer les humains
   create-humans nombre-personnes [
     let coords simulmans:getRandomSpawnableCoords spawnable-coords
     set xcor item 0 coords
@@ -107,24 +102,18 @@ to setup
     set etat 1
     set label "" ;; Cache le label
     set smoke-detected false
-    simulmans:initializeGraph
-  ]
-  ;; Partie Fumée !!!!
-
-  ask patches [
-    if pcolor = white [  ; Assurez-vous que seuls les patches blancs peuvent contenir de la fumée
-      set smoke-level 0
-    ]
+    simulmans:initializeGraph ;; Chaque humain initialise son graphe pour le déplacement
   ]
 
+
+  ;; On prépare la fumée
   let fire-coords simulmans:getRandomSpawnableCoords spawnable-coords
   set fire-x item 0 fire-coords
   set fire-y item 1 fire-coords
 
-  ; Ajouter une source de fumée
-  ask patch fire-x fire-y [  ; Exemple : source de fumée au centre
+  ask patch fire-x fire-y [
     set smoke-level 1
-    set pcolor gray + 2  ; Premier niveau de fumée (gris clair)
+    set pcolor gray + 2  ;; Premier niveau de fumée (gris clair)
   ]
 
   if debug-graph [
@@ -137,10 +126,9 @@ to setup
 end
 
 
-;; Fonction pour la fumée c'est le check actuel des turtles
+;; Fonction qui permet au turtles de vérifier s'il y a de la fumée
 to check-for-smoke
-  ; Vérifier les patches à 3 de distance autour de la tortue
-  let nearby-smoke patches in-radius 3 with [smoke-level >= 1]
+  let nearby-smoke patches in-cone 10 65 with [smoke-level > 0 and not (pcolor >= 10 and pcolor <= 30)] ;; Champ de vision de l'humain
 
   ; Si un patch avec de la fumée est détecté, déclencher le mouvement
   if any? nearby-smoke [
@@ -152,7 +140,7 @@ end
 to diffuse-smoke
   set smoke-updated false
 
-  ask patches with [smoke-level > 3 and not (pcolor >= 10 and pcolor <= 30)] [
+  ask patches with [smoke-level > 3] [
     ask neighbors with [smoke-level = 0 and not (pcolor >= 10 and pcolor <= 30) and not any? exit-doors in-radius 7 ] [
       ; Jet aléatoire entre 1 et 7
       let diffusion-roll random 7 + 1
@@ -164,7 +152,7 @@ to diffuse-smoke
       ]
     ]
   ]
-  ask patches with [smoke-level > 0 and smoke-level < 4 and not (pcolor >= 10 and pcolor <= 30)] [
+  ask patches with [smoke-level > 0 and smoke-level < 4] [
     ask neighbors with [smoke-level = 0 and not (pcolor >= 10 and pcolor <= 30) and not (pcolor >= 101 and pcolor <= 109) and not any? exit-doors in-radius 7 ] [
       ; Jet aléatoire entre 1 et 7
       let diffusion-roll random 7 + 1
@@ -195,18 +183,18 @@ end
 
 to go
 
-  ; Diffusion de fumée
+  ;; Diffusion de fumée
   if ticks mod 3 = 0 [
     diffuse-smoke
   ]
 
 
-  ; Augmentation des niveaux de fumée tous les 10 ticks
+  ;; Augmentation des niveaux de fumée
   if ticks mod 500 = 0 and not smoke-updated  [
     increase-smoke-level
   ]
 
-  ; Mouvement des tortues
+  ;; Mouvement des tortues
   if movement-started = 0[
     ask humans [
 
@@ -234,13 +222,14 @@ to go
     ]
 
   ]
+
   ;; Gérer les interactions
   ask humans [
 
     let turtle-id who
 
     ask patches in-cone 20 65 with [smoke-level > 0 and not (pcolor >= 10 and pcolor <= 30)]  [ ;; Champ de vision de l'humain
-      ;;simulmans:registerSmoke turtle-id
+      simulmans:registerSmoke turtle-id
     ]
 
     ;; Vérifier si un humain est dans la zone de contact d'une porte-sortie
@@ -279,66 +268,40 @@ to go
 end
 
 to go-to-button
-  print (word "go-to-button : " "entry")
 
-  let coords simulmans:getCoordsToAlarm
-
-    print (word "go-to-button : " "coords obtained")
+  let coords simulmans:getCoordsToAlarm ;; On récupère les prochaines coordonnées
 
   let x item 0 coords
   let y item 1 coords
 
-  print (word "go-to-button : " "facing patch")
-  face patch x y
+  face patch x y ;; On dirige la tortue
 
   let next-patch-distance speed
 
-  print (word "turtle : " "x : " xcor "y :" ycor)
-
-  print (word "dest : " "x : " x "y :" y)
-
-  print (word "go-to-button : " "checking next patch")
-  while [any? patches in-cone next-patch-distance 120 with [not is-walkable pcolor (smoke-level > 0)]] [
-    set heading random 360  ; Change direction randomly
+  while [any? patches in-cone next-patch-distance 120 with [not is-walkable pcolor (smoke-level > 0)]] [ ;; Si jamais on se dirige vers un mur
+    set heading random 360  ;; On change de direction
   ]
 
-  print (word "go-to-button : " "moving")
+  setxy x y ;; La tortue avance
 
-  setxy x y
-
-  print (word "go-to-button : " "end")
 end
 
 to move-to-exit
 
-  print (word "move-to-exit : " "entry")
-
-  let coords simulmans:getCoordsToExit
-
-    print (word "move-to-exit : " "coords obtained")
+  let coords simulmans:getCoordsToExit ;; On récupère les prochaines coordonnées
 
   let x item 0 coords
   let y item 1 coords
 
-  print (word "move-to-exit : " "facing patch")
-  face patch x y
+  face patch x y ;; On dirige la tortue
 
   let next-patch-distance speed
 
-  print (word "turtle : " "x : " xcor "y :" ycor)
-
-  print (word "dest : " "x : " x "y :" y)
-
-  print (word "move-to-exit : " "checking next patch")
-  while [any? patches in-cone next-patch-distance 120 with [not is-walkable pcolor (smoke-level > 0)]] [
-    set heading random 360  ; Change direction randomly
+  while [any? patches in-cone next-patch-distance 120 with [not is-walkable pcolor (smoke-level > 0)]] [ ;; Si jamais on se dirige vers un mur
+    set heading random 360  ;; On change de direction
   ]
 
-  print (word "move-to-exit : " "moving")
-
-  setxy x y
-
-  print (word "move-to-exit : " "end")
+  setxy x y ;; La tortue avance
 end
 
 to-report is-wall [in_color]
@@ -364,8 +327,8 @@ to move-randomly
 
   let next-patch-distance 1 + speed
 
-  while [any? patches in-cone next-patch-distance 120 with [not is-walkable pcolor (smoke-level > 0)]] [
-    set heading random 360  ; Change direction randomly
+  while [any? patches in-cone next-patch-distance 120 with [not is-walkable pcolor (smoke-level > 0)]] [ ;; Si jamais on se dirige vers un mur
+    set heading random 360  ;; On change de direction
   ]
 
   if move [
@@ -442,10 +405,10 @@ ticks
 30.0
 
 BUTTON
-11
-178
-77
-211
+13
+132
+215
+165
 NIL
 setup
 NIL
@@ -459,10 +422,10 @@ NIL
 1
 
 BUTTON
-88
-178
-151
-211
+12
+222
+214
+255
 NIL
 go
 T
@@ -476,10 +439,10 @@ NIL
 1
 
 SWITCH
-11
-132
-151
-165
+29
+634
+169
+667
 debug-graph
 debug-graph
 1
@@ -518,10 +481,10 @@ chrono
 11
 
 SLIDER
-1087
-268
-1487
-301
+28
+669
+168
+702
 human-speed
 human-speed
 0
@@ -535,23 +498,23 @@ HORIZONTAL
 SLIDER
 910
 333
-1082
+1196
 366
 nombre-boutons
 nombre-boutons
 1
 7
-4.0
+1.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-909
-374
-1081
-407
+910
+365
+1197
+398
 nombre-portes
 nombre-portes
 0
@@ -563,10 +526,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-909
-413
-1081
-446
+910
+397
+1197
+430
 nombre-signals
 nombre-signals
 0
@@ -579,14 +542,14 @@ HORIZONTAL
 
 SLIDER
 910
-455
-1082
-488
+429
+1196
+462
 nombre-personnes
 nombre-personnes
 0
 15
-15.0
+8.0
 1
 1
 NIL
@@ -600,6 +563,126 @@ TEXTBOX
 SIMUL'MANS
 35
 23.0
+1
+
+TEXTBOX
+33
+613
+183
+631
+Déboguage
+11
+0.0
+0
+
+TEXTBOX
+11
+96
+237
+138
+— Préparer la simulation
+17
+0.0
+1
+
+TEXTBOX
+6
+191
+260
+214
+— Démmarer la simulation
+17
+0.0
+1
+
+TEXTBOX
+1215
+339
+1479
+367
+Nombre de déclancheur d'alarme incendie
+11
+0.0
+1
+
+TEXTBOX
+1216
+371
+1448
+399
+Nombre de portes d'évacuation
+11
+0.0
+1
+
+TEXTBOX
+1216
+398
+1450
+426
+Nombre de signaux d'issue de secours
+11
+0.0
+1
+
+TEXTBOX
+1216
+431
+1447
+459
+Nombre d'humains dans la simulation
+11
+0.0
+1
+
+TEXTBOX
+1248
+449
+1398
+487
+Impacte beaucoup les performances
+15
+15.0
+1
+
+TEXTBOX
+24
+309
+174
+327
+Rectangle bleu : porte
+11
+0.0
+1
+
+TEXTBOX
+22
+333
+227
+361
+Carré vert : issue de secours
+11
+0.0
+1
+
+TEXTBOX
+21
+356
+245
+398
+Cercle orange : déclancheur d'alarme incendie
+11
+0.0
+1
+
+TEXTBOX
+20
+392
+246
+420
+Flèche verte : indication d'issue de secours
+11
+0.0
 1
 
 @#$#@#$#@
