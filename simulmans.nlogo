@@ -685,7 +685,28 @@ Flèche verte : indication d'issue de secours
 0.0
 1
 
+TEXTBOX
+17
+10
+167
+28
+BROCHELARD Hugo
+11
+0.0
+1
+
+TEXTBOX
+19
+30
+169
+48
+DESPERT Ange\n
+11
+0.0
+1
+
 @#$#@#$#@
+# SIMUL'MANS :  BROCHELARD Hugo, DESPERT Ange
 ## Le but du projet
 
 Simul'Mans est un projet Netlogo qui est une simulation multi-agents d'une évacuation du bâtiment IC2. Notre mission principale sera de faire une simulation d'évacuation d'un incendie dans le bâtiment.
